@@ -61,6 +61,10 @@ def topology():
     ## Run a simple HTTP server on h1
     print "*** Starting HTTP server on H1"
     h1.cmdPrint('python -m SimpleHTTPServer 80 &')
+        
+    ## TODO Implement own h1 server (Send or receive?)
+    #print "*** Starting our own server on H1"
+    #h1.cmdPrint('python -m OUROWNServer 80 &')
 
     """association control"""
     net.associationControl('ssf')
