@@ -23,12 +23,13 @@ SendPORT = 5005
 RecvIP = "10.0.0.3" # Low bandwidth
 RecvPORT = 5005
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
-sock.bind((RevcIP, RecvPORT))
+sock.bind((RecvIP, RecvPORT))
 
 while True:
     data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
     print "received message:", data
-    sock.sendto("Ack", (SendIP, SendPORT))
+    sock.sendto("Ack", (addr[0], addr[1]))
+    #sock.sendto("Ack", (SendIP, SendPORT))
 
 
 

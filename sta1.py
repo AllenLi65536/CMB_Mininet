@@ -17,11 +17,10 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
 while True:
     message = readline()
     sock.sendto(message, (SendIP, SendPort))
-    RecvACK(sock) 
+    util.RecvACK(sock) 
 
 
 #UDP Socket Receive
-#import socket
 #
 #UDP_IP = "10.1.0.2" # High bandwidth
 #UDP_IP = "10.0.0.2" # Low bandwidth
