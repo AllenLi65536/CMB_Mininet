@@ -4,7 +4,8 @@
 # UDP Socket Send
 import socket
  
-UDP_IP = "10.0.0.3"
+#UDP_IP = "10.1.0.3" # High bandwidth
+UDP_IP = "10.0.0.3" # Low bandwidth
 UDP_PORT = 5005
 MESSAGE = "Hello, World!"
 print "UDP target IP:", UDP_IP
@@ -17,7 +18,8 @@ sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
 
 #import socket
 #
-#UDP_IP = "10.0.0.2"
+#UDP_IP = "10.1.0.2" # High bandwidth
+#UDP_IP = "10.0.0.2" # Low bandwidth
 #UDP_PORT = 5005
 #sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
 #sock.bind((UDP_IP, UDP_PORT))
