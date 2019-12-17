@@ -59,12 +59,12 @@ def topology():
     h1.setIP('10.1.0.3/24', intf='h1-eth1')
 
     ## Run a simple HTTP server on h1
-    print "*** Starting HTTP server on H1"
-    h1.cmdPrint('python -m SimpleHTTPServer 80 &')
+    #print "*** Starting HTTP server on H1"
+    #h1.cmdPrint('python -m SimpleHTTPServer 80 &')
         
     ## TODO Implement own h1 server (Send or receive?)
     #print "*** Starting our own server on H1"
-    #h1.cmdPrint('python -m OUROWNServer 80 &')
+    #h1.cmdPrint('python h1.py')
 
     """association control"""
     net.associationControl('ssf')
