@@ -1,12 +1,14 @@
 # This file contains some possibility in implementation
 # UDP Socket is preferred
 
+import socket
+import util
+
 # UDP Socket Send
-#import socket
 # 
 #UDP_IP = "10.1.0.2" # High bandwidth
-#UDP_IP = "10.0.0.2" # Low bandwidth
-#UDP_PORT = 5005
+SendIP = "10.0.0.2" # Low bandwidth
+SendPORT = 5005
 #MESSAGE = "Hello, World!"
 #print "UDP target IP:", UDP_IP
 #print "UDP target port:", UDP_PORT
@@ -16,18 +18,17 @@
 
 #UDP Socket Receive
 
-import socket
-import util
 
 #UDP_IP = "10.1.0.3" # High bandwidth
-UDP_IP = "10.0.0.3" # Low bandwidth
-UDP_PORT = 5005
+RecvIP = "10.0.0.3" # Low bandwidth
+RecvPORT = 5005
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
-sock.bind((UDP_IP, UDP_PORT))
+sock.bind((RevcIP, RecvPORT))
 
 while True:
     data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
     print "received message:", data
+    sock.sendto("Ack", (SendIP, SendPORT))
 
 
 
