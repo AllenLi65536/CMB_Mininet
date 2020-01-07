@@ -31,8 +31,6 @@ while True:
     sock.sendto("Ack", (addr[0], addr[1]))
     #sock.sendto("Ack", (SendIP, SendPORT))
 
-
-
 # FOLLOWINGS ARE FOR REFERENCE ONLY NOT USED!!
 
 # SimpleHTTPServer
