@@ -58,13 +58,21 @@ if __name__ == '__main__':
         #TODO send file
         print "Sending file"
 
-        blocksOfFile = [str(i) + " " + str(i) for i in range(15)] #Temporary
+        blocksOfFile = [str(i) + " " + str(i) for i in range(fileLength)] #Temporary
 
         for i in range(fileLength):
             sock.sendto(blocksOfFile[i], (RemoteIP, RemotePort)) # Temporary
         
-            # TODO Receive ACK
-
+            # Receive ACK
+#            while True:
+#                data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
+#                if data.startswith("Ack"):
+#                    ackNum = int(data.split(" ")[1])
+#                    print "Ack received ", ackNum
+#                    break
+#                else:
+#                    print data
+#
 
 
         print "Send file completed"

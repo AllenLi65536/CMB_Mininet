@@ -55,8 +55,8 @@ if __name__ == '__main__':
 
     while True:
         print("Input request filename:"),
-        message = readline()
-        sock.sendto(message, (RemoteIP, RemotePort))
+        fileName = readline()
+        sock.sendto(fileName, (RemoteIP, RemotePort))
         #util.RecvACK(sock) 
         
         fileLength = 0
@@ -79,14 +79,15 @@ if __name__ == '__main__':
         while fileBlockReceivedCount < fileLength:
             data, addr = sock.recvfrom(1024)
             seqNum = int(data.solit(" ")[0]) # Temporary
+
+            # Send ACK
+            #sock.sendto("Ack " + str(seqNum), (addr[0], addr[1])) # RemoteIP, RemotePort
             
             fileBlocks[seqNum] = data
             print "Received ", data # Temporary
             fileBlockReceived[seqNum] = True
             fileBlockReceivedCount += 1
         
-        #time.sleep(fileLength) # Temporary
-
         print "Receive completed!"
 
 
