@@ -6,36 +6,55 @@ import multiprocessing
 
 readline = sys.stdin.readline
 
-def SendHeartbeat(LocalIP, LocalPort, SendIP, SendPort):
+wifiConnected = False
+
+def ReceiveHeartbeat(LocalIP, LocalPort, RemoteIP, RemotePort):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
+    sock.bind((LocalIP, LocalPort))
+    sock.settimeout(10)
+
+    while True:
+        try:
+            data, addr = sock.recvfrom(1024)
+            if data.startswith("HeartBeat"):
+                global wifiConnected
+                wifiConnected = True
+        except socket.timeout:
+            print "Receive Heartheat timeout"
+            global wifiConnected
+            wifiConnected = False
+
+def SendHeartbeat(LocalIP, LocalPort, RemoteIP, RemotePort):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
     sock.bind((LocalIP, LocalPort))
 
-    #TODO Recv heartbeat
-    
     while True:
-        sock.sendto("HeartBeat", (SendIP, SendPort))
+        sock.sendto("HeartBeat", (RemoteIP, RemotePort))
         time.sleep(4)
  
 if __name__ == '__main__':
 
     # UDP Socket Send
-    #SendIP = "10.1.0.3" # High bandwidth
-    SendIP = "10.0.0.3" # Low bandwidth
-    SendPort = 5005
+    RemoteIPH = "10.1.0.3" # High bandwidth
+    RemoteIP = "10.0.0.3" # Low bandwidth
+    RemotePort = 5005
     
-    #LocalIP = "10.1.0.2" # High bandwidth
+    LocalIPH = "10.1.0.2" # High bandwidth
     LocalIP = "10.0.0.2" # Low bandwidth
     LocalPort = 5005
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
     sock.bind((LocalIP, LocalPort))
     
-    p = multiprocessing.Process(target=SendHeartbeat, args=(LocalIP, LocalPort, SendIP, SendPort))
+    # Start Heartbeat
+    p = multiprocessing.Process(target=SendHeartbeat, args=(LocalIP, 5010, RemoteIP, 5009))
+    p.start()
+    p = multiprocessing.Process(target=ReceiveHeartbeat, args=(LocalIP, 5009, RemoteIP, 5010))
     p.start()
 
     while True:
         print("Input request filename:"),
         message = readline()
-        sock.sendto(message, (SendIP, SendPort))
+        sock.sendto(message, (RemoteIP, RemotePort))
         #util.RecvACK(sock) 
         
         while True:
@@ -44,11 +63,14 @@ if __name__ == '__main__':
                 fileLength = int(data.split(" ")[1])
                 print "Ack received, fileLength: ", fileLength
                 break
+            else:
+                print data
         
         # TODO Receive file
         print "Receiving file..."
         
-        time.sleep(fileLength)
+        time.sleep(fileLength) # Temporary
+
         print "Receive completed!"
 
 
