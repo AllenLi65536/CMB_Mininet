@@ -19,6 +19,8 @@ def ReceiveHeartbeat(LocalIP, LocalPort, RemoteIP, RemotePort):
             if data.startswith("HeartBeat"):
                 global wifiConnected
                 wifiConnected = True
+            else:
+                print data
         except socket.timeout:
             print "Receive Heartheat timeout"
             global wifiConnected
@@ -57,6 +59,7 @@ if __name__ == '__main__':
         sock.sendto(message, (RemoteIP, RemotePort))
         #util.RecvACK(sock) 
         
+        fileLength = 0
         while True:
             data, addr = sock.recvfrom(1024)
             if data.startswith("Ack"):
@@ -66,10 +69,23 @@ if __name__ == '__main__':
             else:
                 print data
         
+        fileBlockReceived = [False]*fileLength
+        fileBlockReceivedCount = 0
+        fileBlocks = [0]*fileLength
+        
         # TODO Receive file
         print "Receiving file..."
+
+        while fileBlockReceivedCount < fileLength:
+            data, addr = sock.recvfrom(1024)
+            seqNum = int(data.solit(" ")[0]) # Temporary
+            
+            fileBlocks[seqNum] = data
+            print "Received ", data # Temporary
+            fileBlockReceived[seqNum] = True
+            fileBlockReceivedCount += 1
         
-        time.sleep(fileLength) # Temporary
+        #time.sleep(fileLength) # Temporary
 
         print "Receive completed!"
 
