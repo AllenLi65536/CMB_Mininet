@@ -6,7 +6,6 @@ import multiprocessing
 
 readline = sys.stdin.readline
 
-wifiConnected = False
 
 def ReceiveHeartbeat(LocalIP, LocalPort, RemoteIP, RemotePort):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
@@ -17,13 +16,14 @@ def ReceiveHeartbeat(LocalIP, LocalPort, RemoteIP, RemotePort):
         try:
             data, addr = sock.recvfrom(1024)
             if data.startswith("HeartBeat"):
-                global wifiConnected
+                print "HeartBeat Received"
+                #global wifiConnected
                 wifiConnected = True
             else:
                 print data
         except socket.timeout:
             print "Receive Heartheat timeout"
-            global wifiConnected
+            #global wifiConnected
             wifiConnected = False
 
 def SendHeartbeat(LocalIP, LocalPort, RemoteIP, RemotePort):
@@ -47,10 +47,12 @@ if __name__ == '__main__':
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
     sock.bind((LocalIP, LocalPort))
     
+    wifiConnected = False
+    
     # Start Heartbeat
-    p = multiprocessing.Process(target=SendHeartbeat, args=(LocalIP, 5010, RemoteIP, 5009))
+    p = multiprocessing.Process(target=SendHeartbeat, args=(LocalIPH, 5010, RemoteIPH, 5009))
     p.start()
-    p = multiprocessing.Process(target=ReceiveHeartbeat, args=(LocalIP, 5009, RemoteIP, 5010))
+    p = multiprocessing.Process(target=ReceiveHeartbeat, args=(LocalIPH, 5009, RemoteIPH, 5010))
     p.start()
 
     while True:
@@ -78,13 +80,13 @@ if __name__ == '__main__':
 
         while fileBlockReceivedCount < fileLength:
             data, addr = sock.recvfrom(1024)
-            seqNum = int(data.solit(" ")[0]) # Temporary
+            seqNum = int(data.split(" ")[0]) # Temporary
 
             # Send ACK
             #sock.sendto("Ack " + str(seqNum), (addr[0], addr[1])) # RemoteIP, RemotePort
             
-            fileBlocks[seqNum] = data
-            print "Received ", data # Temporary
+            fileBlocks[seqNum] = data.split(" ")[1:]
+            print "Received ", fileBlocks[seqNum] # Temporary
             fileBlockReceived[seqNum] = True
             fileBlockReceivedCount += 1
         

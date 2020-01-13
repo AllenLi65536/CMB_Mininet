@@ -1,7 +1,8 @@
 import socket
 import util
-
-wifiConnected = False
+import sys
+import time
+import multiprocessing
 
 def ReceiveHeartbeat(LocalIP, LocalPort, RemoteIP, RemotePort):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
@@ -12,13 +13,14 @@ def ReceiveHeartbeat(LocalIP, LocalPort, RemoteIP, RemotePort):
         try:
             data, addr = sock.recvfrom(1024)
             if data.startswith("HeartBeat"):
-                global wifiConnected
+                print "HeartBeat Received"
+                #global wifiConnected
                 wifiConnected = True
             else:
                 print data
         except socket.timeout:
             print "Receive Heartheat timeout"
-            global wifiConnected
+            #global wifiConnected
             wifiConnected = False
 
 def SendHeartbeat(LocalIP, LocalPort, RemoteIP, RemotePort):
@@ -41,16 +43,18 @@ if __name__ == '__main__':
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
     sock.bind((LocalIP, LoaclPort))
+
+    wifiConnected = False
     
     # Start Heartbeat
-    p = multiprocessing.Process(target=SendHeartbeat, args=(LocalIP, 5010, RemoteIP, 5009))
+    p = multiprocessing.Process(target=SendHeartbeat, args=(LocalIPH, 5010, RemoteIPH, 5009))
     p.start()
-    p = multiprocessing.Process(target=ReceiveHeartbeat, args=(LocalIP, 5009, RemoteIP, 5010))
+    p = multiprocessing.Process(target=ReceiveHeartbeat, args=(LocalIPH, 5009, RemoteIPH, 5010))
     p.start()
 
     while True:
-        data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
-        print "requested file:", data
+        fileName, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
+        print "requested file:", fileName
 
         fileLength = 15 #Temporary
         sock.sendto("Ack " + str(fileLength), (addr[0], addr[1])) # RemoteIP, RemotePort
