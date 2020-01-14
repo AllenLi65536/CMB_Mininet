@@ -31,6 +31,20 @@ class FileOperator:
         for i in data:
             self.file.write(i)
         self.file.close()
+        
+def getDataBlock(filename, blocknumber):
+    result = []
+    file = open(filename, 'rb')
+    data = file.read()
 
+    if len(data) // BLOCK_SIZE < blocknumber:
+        return None
+    for i in range(BLOCK_SIZE):
+        dataIndex = BLOCK_SIZE*blocknumber + i
+        if dataIndex < len(data):
+            result.append(data[dataIndex])
+    return result
+
+#blockData = getDataBlock("hehe.mp4", 1)
 
 
