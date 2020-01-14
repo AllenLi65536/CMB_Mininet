@@ -40,9 +40,6 @@ def SendHeartbeat(LocalIP, LocalPort, RemoteIP, RemotePort):
         time.sleep(4)
 
 def ReceiveFileChunks(sockR, sockS):
-    #sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
-    #sock.bind((LocalIP, LocalPort))
-    
     sockR.settimeout(1)
 
     global fileBlockReceived
@@ -51,7 +48,7 @@ def ReceiveFileChunks(sockR, sockS):
     global fileLength
     
     while fileBlockReceivedCount < fileLength:
-        # PROBLEM: global variABLES NOT SYNCHRONIZED BETWEEN THREADS
+        # PROBLEM: global variables NOT SYNCHRONIZED BETWEEN THREADS
         #print "blockCount:", fileBlockReceivedCount, " fileLength:", fileLength
         try:
             data, addr = sockR.recvfrom(1024)
