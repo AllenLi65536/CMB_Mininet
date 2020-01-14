@@ -47,9 +47,12 @@ def ReceiveFileChunks(sockR, sockS):
     global fileBlocks 
     global fileLength
     
-    while fileBlockReceivedCount < fileLength:
+    while True:
+        global fileBlockReceivedCount
+        if fileBlockReceivedCount >= fileLength:
+            break
         # PROBLEM: global variables NOT SYNCHRONIZED BETWEEN THREADS
-        #print "blockCount:", fileBlockReceivedCount, " fileLength:", fileLength
+        print "blockCount:", fileBlockReceivedCount, " fileLength:", fileLength
         try:
             data, addr = sockR.recvfrom(1024)
         except socket.timeout:
