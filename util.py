@@ -16,6 +16,14 @@ def RecvACK(sock):
       p.terminate()
       p.join()    
 
+def getFileChunks(fileName):
+    # TODO openfile and return chunks of file
+
+    fileLength = 15 #Temporary
+    blocksOfFile = [str(i) + " " + str(i) for i in range(fileLength)] #Temporary
+    
+    return blocksOfFile, fileLength
+
 class Packet:
     def __init__(self, seq, ack, isSyn, isAck):
         self.seq = seq

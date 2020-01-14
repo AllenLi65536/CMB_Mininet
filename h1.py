@@ -13,14 +13,12 @@ def ReceiveHeartbeat(LocalIP, LocalPort, RemoteIP, RemotePort):
         try:
             data, addr = sock.recvfrom(1024)
             if data.startswith("HeartBeat"):
-                print "HeartBeat Received"
-                #global wifiConnected
+                #print "HeartBeat Received"
                 wifiConnected = True
             else:
                 print data
         except socket.timeout:
-            print "Receive Heartheat timeout"
-            #global wifiConnected
+            #print "Receive Heartheat timeout"
             wifiConnected = False
 
 def SendHeartbeat(LocalIP, LocalPort, RemoteIP, RemotePort):
@@ -47,22 +45,24 @@ if __name__ == '__main__':
     wifiConnected = False
     
     # Start Heartbeat
-    p = multiprocessing.Process(target=SendHeartbeat, args=(LocalIPH, 5010, RemoteIPH, 5009))
-    p.start()
-    p = multiprocessing.Process(target=ReceiveHeartbeat, args=(LocalIPH, 5009, RemoteIPH, 5010))
-    p.start()
+    p1 = multiprocessing.Process(target=SendHeartbeat, args=(LocalIPH, 5010, RemoteIPH, 5009))
+    p1.start()
+    p2 = multiprocessing.Process(target=ReceiveHeartbeat, args=(LocalIPH, 5009, RemoteIPH, 5010))
+    p2.start()
 
     while True:
         fileName, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
         print "requested file:", fileName
 
-        fileLength = 15 #Temporary
+        #fileLength = 15 #Temporary
+        #blocksOfFile = [str(i) + " " + str(i) for i in range(fileLength)] #Temporary
+        
+        blocksOfFile, fileLength = getFileChunks(fileName)
+        
         sock.sendto("Ack " + str(fileLength), (addr[0], addr[1])) # RemoteIP, RemotePort
 
         #TODO send file
         print "Sending file"
-
-        blocksOfFile = [str(i) + " " + str(i) for i in range(fileLength)] #Temporary
 
         for i in range(fileLength):
             sock.sendto(blocksOfFile[i], (RemoteIP, RemotePort)) # Temporary
