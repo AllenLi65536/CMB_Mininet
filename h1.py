@@ -33,14 +33,23 @@ if __name__ == '__main__':
 
     RemoteIPH = "10.1.0.2" # High bandwidth
     RemoteIP = "10.0.0.2" # Low bandwidth
-    RemotePort = 5005
 
     LocalIPH = "10.1.0.3" # High bandwidth
     LocalIP = "10.0.0.3" # Low bandwidth
-    LoaclPort = 5005
+    SendPort = 5005
+    ReceivePort = 5006
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
-    sock.bind((LocalIP, LoaclPort))
+    sockS = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
+    sockS.bind((LocalIP, SendPort))
+    
+    sockSH = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
+    sockSH.bind((LocalIPH, SendPort))
+    
+    sockR = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
+    sockR.bind((LocalIP, ReceivePort))
+    
+    sockRH = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
+    sockRH.bind((LocalIPH, ReceivePort))
 
     wifiConnected = False
     
@@ -51,21 +60,23 @@ if __name__ == '__main__':
     p2.start()
 
     while True:
-        fileName, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
+        fileName, addr = sockR.recvfrom(1024) # buffer size is 1024 bytes
         print "requested file:", fileName
 
         #fileLength = 15 #Temporary
         #blocksOfFile = [str(i) + " " + str(i) for i in range(fileLength)] #Temporary
         
-        blocksOfFile, fileLength = getFileChunks(fileName)
+        blocksOfFile = util.getFileChunks(fileName)
+        fileLength = len(blocksOfFile)
         
-        sock.sendto("Ack " + str(fileLength), (addr[0], addr[1])) # RemoteIP, RemotePort
+        #sock.sendto("Ack " + str(fileLength), (addr[0], addr[1])) # RemoteIP, RemotePort
+        sockS.sendto("Ack " + str(fileLength), (RemoteIP, ReceivePort))
 
         #TODO send file
         print "Sending file"
 
         for i in range(fileLength):
-            sock.sendto(blocksOfFile[i], (RemoteIP, RemotePort)) # Temporary
+            sockS.sendto(blocksOfFile[i], (RemoteIP, ReceivePort)) # Temporary
         
             # Receive ACK
 #            while True:

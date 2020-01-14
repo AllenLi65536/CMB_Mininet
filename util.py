@@ -1,5 +1,6 @@
 import multiprocessing
 
+import random #temporary
 
 def RecvACKprocess(sock):
     while True:
@@ -16,13 +17,18 @@ def RecvACK(sock):
       p.terminate()
       p.join()    
 
-def getFileChunks(fileName):
+def getFileChunks(fileName, chunkSize = 1000):
     # TODO openfile and return chunks of file
 
-    fileLength = 15 #Temporary
+    fileLength = random.randint(1,30) #Temporary
     blocksOfFile = [str(i) + " " + str(i) for i in range(fileLength)] #Temporary
     
-    return blocksOfFile, fileLength
+    return blocksOfFile
+
+def saveFileFromChunks(blocksOfFile, fileName):
+    # TODO Save chunks into file
+    return 0
+
 
 class Packet:
     def __init__(self, seq, ack, isSyn, isAck):
