@@ -3,6 +3,10 @@ import threading
 import time
 import sys
 
+#how to use: 
+#app = FTP()
+#app.run()
+
 class FTP:
     def __init__(self):
 
