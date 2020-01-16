@@ -42,10 +42,10 @@ def SendHeartbeat(LocalIP, LocalPort, RemoteIP, RemotePort):
 def ReceiveFileChunks(sockR, sockS):
     sockR.settimeout(1)
 
-    global fileBlockReceived
-    global fileBlockReceivedCount
-    global fileBlocks 
-    global fileLength
+    #global fileBlockReceived
+    #global fileBlockReceivedCount
+    #global fileBlocks 
+    #global fileLength
     
     while True:
         global fileBlockReceivedCount
