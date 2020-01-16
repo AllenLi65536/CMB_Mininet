@@ -11,16 +11,16 @@ class FTP:
     def __init__(self):
 
         #global here
+        self.wifiConnected = False
         self.fileBlockReceived = [False]
         self.fileBlocks = [0]
-        self.wifiConnected = False
         self.fileLength = 0
 
-        self.remoteIPH = "10.1.0.3"
-        self.remoteIP = "10.0.0.3"
+        self.localIPH = "10.1.0.3"
+        self.localIP = "10.0.0.3"
 
-        self.localIPH = "10.1.0.2"
-        self.localIP = "10.0.0.2"
+        self.remoteIPH = "10.1.0.2"
+        self.remoteIP = "10.0.0.2"
 
         self.sendPort = 5005
         self.recvPort = 5006
@@ -51,45 +51,40 @@ class FTP:
 
     def run(self):
         while True:
-            print "Input request filename:"
-            fileName = sys.stdin.readline()
-            self.fileLength = 0
-            while True:
-                self.sockS.sendto(fileName, (self.remoteIP, self.recvPort))
-                try:
-                    data,addr = self.sockR.recvfrom(1024)
-                except socket.timeout:
-                    continue
-                if data.startswith("Ack"):
-                    self.fileLength = int(data.split(" ")[1])
-                    print("Ack received, fileLength: " + self.fileLength)
-                    break
-                else:
-                    print(data)
+            fileName, addr = self.sockR.recvfrom(1024) # buffer size is 1024 bytes
+            print "requested file: ", self.fileName
+
+            self.fileBlocks = util.getFileChunks(fileName)
+            self.fileLength = len(self.fileBlocks)
             self.fileBlockReceived = [False] * self.fileLength
-            self.fileBlocks = [0] * self.fileLength
-            print("recving file")
+            
+            self.sockS.sendto("Ack " + str(self.fileLength), (self.remoteIP, self.receivePort))
 
-            t1 = time.time()
+            #TODO send file
+            print "Sending file"
 
-            lowChunkThread = threading.Thread(target=self.receiveFileChunks, args=(self.sockR, self.sockS, False))
-            highChunkThread = threading.Thread(target=self.receiveFileChunks, args=(self.sockRH, self.sockSH, True))
-            lowChunkThread.start()
-            highChunkThread.start()
-
-            lowChunkThread.join()
-            highChunkThread.join()
-
-            delta = time.time() - t1
-            print("recv completed!")
-            print("time elapsed: ", delta)
-            print("speed: " + str(self.fileLength / delta) + "Blocks/second")
-    
+            for i in range(fileLength):
+                while True:
+                    self.sockS.sendto(self.fileBlocks[i], (self.remoteIP, self.receivePort)) # Temporary
+                
+                    # Receive ACK
+                    try:
+                        data, addr = self.sockR.recvfrom(1024)
+                    except socket.timeout:
+                        continue
+                    if data.startswith("Ack"):
+                        ackNum = int(data.split(" ")[1])  # Temporary
+                        self.fileBlockReceived[ackNum] = True
+                        print "Ack received ", ackNum
+                        break
+                    else:
+                        print(data)
+            
+            print "Send file completed"
+        
     def receiveFileChunks(self, receiver, sender, isHighSpeed):
         while sum(self.fileBlockReceived) < self.fileLength::
-            #if sum(self.fileBlockReceived) >= self.fileLength:
-            #    break
-            print "blockCount:", sum(self.fileBlockReceived), " fileLength:", self.fileLength  # Temporary
+            #print "blockCount:", sum(self.fileBlockReceived), " fileLength:", self.fileLength  # Temporary
             try:
                 data, addr = receiver.recvfrom(1024)
             except socket.timeout:

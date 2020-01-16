@@ -63,13 +63,9 @@ if __name__ == '__main__':
         fileName, addr = sockR.recvfrom(1024) # buffer size is 1024 bytes
         print "requested file:", fileName
 
-        #fileLength = 15 #Temporary
-        #blocksOfFile = [str(i) + " " + str(i) for i in range(fileLength)] #Temporary
-        
         blocksOfFile = util.getFileChunks(fileName)
         fileLength = len(blocksOfFile)
         
-        #sock.sendto("Ack " + str(fileLength), (addr[0], addr[1])) # RemoteIP, RemotePort
         sockS.sendto("Ack " + str(fileLength), (RemoteIP, ReceivePort))
 
         #TODO send file
