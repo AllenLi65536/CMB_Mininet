@@ -2,6 +2,7 @@ import socket
 import threading
 import time
 import sys
+import util
 
 #how to use: 
 #app = FTP()
@@ -82,25 +83,6 @@ class FTP:
             
             print "Send file completed"
         
-    def receiveFileChunks(self, receiver, sender, isHighSpeed):
-        while sum(self.fileBlockReceived) < self.fileLength::
-            #print "blockCount:", sum(self.fileBlockReceived), " fileLength:", self.fileLength  # Temporary
-            try:
-                data, addr = receiver.recvfrom(1024)
-            except socket.timeout:
-                continue
-            seqNum = int(data.split(" ")[0])  # Temporary
-
-            # Send ACK
-            if isHighSpeed:
-                sender.sendto("Ack " + str(seqNum), (self.remoteIPH, self.recvPort))
-            else:
-                sender.sendto("Ack " + str(seqNum), (self.remoteIP, self.recvPort))
-
-            self.fileBlocks[seqNum] = data.split(" ")[1:]  # Temporary
-            self.fileBlockReceived[seqNum] = True
-
-
     def sendHeartbeat(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # INTERNET, UDP
         sock.bind((self.localIP, 5010))
