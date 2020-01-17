@@ -51,37 +51,52 @@ class FTP:
         self.recvHeartBeatThread.start()
 
     def run(self):
+        recvAckThread = threading.Thread(target=self.receiveAcks, args=(self.sockR))
+        recvAckThreadH = threading.Thread(target=self.receiveAcks, args=(self.sockRH))
         while True:
-            fileName, addr = self.sockR.recvfrom(1024) # buffer size is 1024 bytes
-            print "requested file: ", self.fileName
+            try:
+                fileName, addr = self.sockR.recvfrom(1024) # buffer size is 1024 bytes
+            except socket.timeout:
+                continue
+            print "requested file: ", fileName
 
             self.fileBlocks = util.getFileChunks(fileName)
             self.fileLength = len(self.fileBlocks)
             self.fileBlockReceived = [False] * self.fileLength
             
-            self.sockS.sendto("Ack " + str(self.fileLength), (self.remoteIP, self.receivePort))
+            self.sockS.sendto("Ack " + str(self.fileLength), (self.remoteIP, self.recvPort))
 
-            #TODO send file
             print "Sending file"
 
-            for i in range(fileLength):
-                while True:
-                    self.sockS.sendto(self.fileBlocks[i], (self.remoteIP, self.receivePort)) # Temporary
-                
-                    # Receive ACK
-                    try:
-                        data, addr = self.sockR.recvfrom(1024)
-                    except socket.timeout:
-                        continue
-                    if data.startswith("Ack"):
-                        ackNum = int(data.split(" ")[1])  # Temporary
-                        self.fileBlockReceived[ackNum] = True
-                        print "Ack received ", ackNum
-                        break
-                    else:
-                        print(data)
+            #TODO send file with multithread on multiple link
             
+            for i in range(self.fileLength):
+                self.sockS.sendto(self.fileBlocks[i], (self.remoteIP, self.recvPort)) # Temporary
+                
             print "Send file completed"
+
+    def sendFileChunks(self, receiver, sender, isHighSpeed):
+        #TODO Send file
+        #while sum(self.fileBlockReceived) < self.fileLength:
+        # TODO find a block i that's not sent to send
+        #    if isHighSpeed: 
+        #        sender.sendto(self.fileBlocks[i], (self.remoteIPH, self.recvPort)) # Temporary
+        #    else:
+        #        sender.sendto(self.fileBlocks[i], (self.remoteIP, self.recvPort)) # Temporary
+
+    def receiveAcks(self, sock):
+        # Receive ACK
+        while True:
+            try:
+                data, addr = self.sock.recvfrom(1024)
+            except socket.timeout:
+                continue
+            if data.startswith("Ack"):
+                ackNum = int(data.split(" ")[1])  # Temporary
+                self.fileBlockReceived[ackNum] = True
+                print "Ack received ", ackNum
+            else:
+                print(data)
         
     def sendHeartbeat(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # INTERNET, UDP

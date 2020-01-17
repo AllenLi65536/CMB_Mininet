@@ -51,7 +51,7 @@ class FTP:
 
     def run(self):
         while True:
-            print "Input request filename:"
+            print "Input request filename:",
             fileName = sys.stdin.readline()
             self.fileLength = 0
             while True:
@@ -62,7 +62,7 @@ class FTP:
                     continue
                 if data.startswith("Ack"):
                     self.fileLength = int(data.split(" ")[1])
-                    print("Ack received, fileLength: " + self.fileLength)
+                    print("Ack received, fileLength: " + str(self.fileLength))
                     break
                 else:
                     print(data)
@@ -86,9 +86,7 @@ class FTP:
             print("speed: " + str(self.fileLength / delta) + "Blocks/second")
     
     def receiveFileChunks(self, receiver, sender, isHighSpeed):
-        while sum(self.fileBlockReceived) < self.fileLength::
-            #if sum(self.fileBlockReceived) >= self.fileLength:
-            #    break
+        while sum(self.fileBlockReceived) < self.fileLength:
             print "blockCount:", sum(self.fileBlockReceived), " fileLength:", self.fileLength  # Temporary
             try:
                 data, addr = receiver.recvfrom(1024)
