@@ -24,6 +24,7 @@ class FTP:
 
         self.sendPort = 5005
         self.recvPort = 5006
+        self.recvAckPort = 5007
 
         self.initSocket()
         self.initHeartBeat()
@@ -41,7 +42,7 @@ class FTP:
 
         self.sockRH = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sockRH.bind((self.localIPH, self.recvPort))
-        self.sockRH.settimeout(1)
+        self.sockRH.settimeout(0.5)
 
     def initHeartBeat(self):
         self.sendHeartBeatThread = threading.Thread(target=self.sendHeartbeat)
@@ -87,7 +88,7 @@ class FTP:
     
     def receiveFileChunks(self, receiver, sender, isHighSpeed):
         while sum(self.fileBlockReceived) < self.fileLength:
-            print "blockCount:", sum(self.fileBlockReceived), " fileLength:", self.fileLength  # Temporary
+            #print "blockCount:", sum(self.fileBlockReceived), " fileLength:", self.fileLength  # Temporary
             try:
                 data, addr = receiver.recvfrom(1024)
             except socket.timeout:
@@ -96,9 +97,10 @@ class FTP:
 
             # Send ACK
             if isHighSpeed:
-                sender.sendto("Ack " + str(seqNum), (self.remoteIPH, self.recvPort))
+                print "Received through Wifi ", str(seqNum)
+                sender.sendto("Ack " + str(seqNum), (self.remoteIPH, self.recvAckPort))
             else:
-                sender.sendto("Ack " + str(seqNum), (self.remoteIP, self.recvPort))
+                sender.sendto("Ack " + str(seqNum), (self.remoteIP, self.recvAckPort))
 
             self.fileBlocks[seqNum] = data.split(" ")[1:]  # Temporary
             self.fileBlockReceived[seqNum] = True
