@@ -76,6 +76,7 @@ class FTP:
             self.fileLength = len(self.fileBlocks)
             self.fileBlockReceived = [False] * self.fileLength
             
+            # TODO use packet instead of plain string
             self.sockS.sendto("Ack " + str(self.fileLength), (self.remoteIP, self.recvPort))
 
             print "Sending file"
@@ -105,6 +106,7 @@ class FTP:
             firstIter = False
             for i in range(self.fileLength):
                 if not self.fileBlockReceived[i]:
+                    # TODO use packet instead of plain string
                     self.sockS.sendto(self.fileBlocks[i], (self.remoteIP, self.recvPort)) # Temporary
     
     def sendFileChunksH(self):
@@ -120,6 +122,7 @@ class FTP:
                         if sum(self.fileBlockReceived) >= self.fileLength:
                             return
                         time.sleep(2)
+                    # TODO use packet instead of plain string
                     self.sockSH.sendto(self.fileBlocks[i], (self.remoteIPH, self.recvPort)) # Temporary
 
     def receiveAcks(self, sock):
@@ -129,6 +132,7 @@ class FTP:
                 data, addr = sock.recvfrom(1024)
             except socket.timeout:
                 continue
+            # TODO use packet instead of plain string
             if data.startswith("Ack"):
                 ackNum = int(data.split(" ")[1])  # Temporary
                 self.fileBlockReceived[ackNum] = True
@@ -141,7 +145,7 @@ class FTP:
         sock.bind((self.localIP, 5010))
 
         while True:
-            sock.sendto("HeartBeat", (self.remoteIP, 5009))
+            sock.sendto("H", (self.remoteIP, 5009))
             time.sleep(4)
 
     def receiveHeartbeat(self):
@@ -155,7 +159,7 @@ class FTP:
         while True:
             try:
                 data, addr = sock.recvfrom(1024)
-                if data.startswith("HeartBeat"):
+                if data.startswith("H"):
                     # print "HeartBeat Received"
                     wifiConnected = True
                 else:

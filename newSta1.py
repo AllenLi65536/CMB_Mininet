@@ -61,8 +61,10 @@ class FTP:
                     data,addr = self.sockR.recvfrom(1024)
                 except socket.timeout:
                     continue
+                # TODO use packet instead of plain string
                 if data.startswith("Ack"):
-                    self.fileLength = int(data.split(" ")[1])
+                    # TODO use packet instead of plain string
+                    self.fileLength = int(data.split(" ")[1]) # Temporary
                     print("Ack received, fileLength: " + str(self.fileLength))
                     break
                 else:
@@ -98,8 +100,10 @@ class FTP:
             # Send ACK
             if isHighSpeed:
                 print "Received through Wifi ", str(seqNum)
+                # TODO use packet instead of plain string
                 sender.sendto("Ack " + str(seqNum), (self.remoteIPH, self.recvAckPort))
             else:
+                # TODO use packet instead of plain string
                 sender.sendto("Ack " + str(seqNum), (self.remoteIP, self.recvAckPort))
 
             self.fileBlocks[seqNum] = data.split(" ")[1:]  # Temporary
@@ -111,7 +115,7 @@ class FTP:
         sock.bind((self.localIP, 5010))
 
         while True:
-            sock.sendto("HeartBeat", (self.remoteIP, 5009))
+            sock.sendto("H", (self.remoteIP, 5009))
             time.sleep(4)
 
     def receiveHeartbeat(self):
@@ -125,7 +129,7 @@ class FTP:
         while True:
             try:
                 data, addr = sock.recvfrom(1024)
-                if data.startswith("HeartBeat"):
+                if data.startswith("H"):
                     # print "HeartBeat Received"
                     wifiConnected = True
                 else:
