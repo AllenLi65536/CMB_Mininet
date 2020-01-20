@@ -5,17 +5,18 @@ import sys
 import util
 
 #how to use: 
-#app = FTP()
+#app = FTPServer()
 #app.run()
 
-class FTP:
+class FTPServer:
     def __init__(self):
 
         #global here
-        self.wifiConnected = False
         self.fileBlockReceived = [False]
         self.fileBlocks = [0]
         self.fileLength = 0
+        self.wifiConnected = False
+        self.cv = threading.Condition()
 
         self.localIPH = "10.1.0.3"
         self.localIP = "10.0.0.3"
@@ -97,31 +98,46 @@ class FTP:
                 
             print "Send file completed"
 
+    #Send file through mobile network
     def sendFileChunks(self):
-        #Send file through mobile network
         firstIter = True
         while sum(self.fileBlockReceived) < self.fileLength:
             if not firstIter:
-                time.sleep(1) # temporary
+                # Wait for RTT
+                time.sleep(0.5) # temporary
             firstIter = False
+            
             for i in range(self.fileLength):
                 if not self.fileBlockReceived[i]:
                     # TODO use packet instead of plain string
                     self.sockS.sendto(self.fileBlocks[i], (self.remoteIP, self.recvPort)) # Temporary
     
+    #Send file through wifi
     def sendFileChunksH(self):
-        #Send file through wifi
         firstIter = True
         while sum(self.fileBlockReceived) < self.fileLength:
             if not firstIter:
-                time.sleep(1) # temporary
+                # Wait for RTT
+                time.sleep(0.5) # temporary
             firstIter = False
+            
+            # Wait for Wifi
+            while not self.wifiConnected:
+                if sum(self.fileBlockReceived) >= self.fileLength:
+                    return
+                with self.cv:
+                    self.cv.wait(0.5)
+            
             for i in range(self.fileLength-1, -1, -1): # backward from fileLength-1 to 0
                 if not self.fileBlockReceived[i]:
+                    
+                    # Wait for Wifi
                     while not self.wifiConnected:
                         if sum(self.fileBlockReceived) >= self.fileLength:
                             return
-                        time.sleep(2)
+                        with self.cv:
+                            self.cv.wait(0.5)
+                    
                     # TODO use packet instead of plain string
                     self.sockSH.sendto(self.fileBlocks[i], (self.remoteIPH, self.recvPort)) # Temporary
 
@@ -162,6 +178,8 @@ class FTP:
                 if data.startswith("H"):
                     # print "HeartBeat Received"
                     wifiConnected = True
+                    with self.cv:
+                        self.cv.notifyAll()
                 else:
                     print data
             except socket.timeout:
@@ -171,6 +189,6 @@ class FTP:
 
 if __name__ == '__main__':
 
-    app = FTP()
+    app = FTPServer()
     app.run()
 

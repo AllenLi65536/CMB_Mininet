@@ -4,17 +4,17 @@ import time
 import sys
 
 #how to use: 
-#app = FTP()
+#app = FTPClient()
 #app.run()
 
-class FTP:
+class FTPClient:
     def __init__(self):
 
         #global here
         self.fileBlockReceived = [False]
         self.fileBlocks = [0]
-        self.wifiConnected = False
         self.fileLength = 0
+        self.wifiConnected = False
 
         self.remoteIPH = "10.1.0.3"
         self.remoteIP = "10.0.0.3"
@@ -141,6 +141,6 @@ class FTP:
 
 if __name__ == '__main__':
 
-    app = FTP()
+    app = FTPClient()
     app.run()
 
