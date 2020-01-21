@@ -79,6 +79,7 @@ class FTPServer:
             
             # TODO use packet instead of plain string
             self.sockS.sendto("Ack " + str(self.fileLength), (self.remoteIP, self.recvPort))
+            time.sleep(0.3) # temporary
 
             print "Sending file"
 
@@ -169,22 +170,19 @@ class FTPServer:
         sock.bind((self.localIP, 5009))
         sock.settimeout(10)
 
-        if self.wifiConnected:
-            print("HURAYYYYYYYYYYYYYYYYYYYY")
-
         while True:
             try:
                 data, addr = sock.recvfrom(1024)
                 if data.startswith("H"):
                     # print "HeartBeat Received"
-                    wifiConnected = True
+                    self.wifiConnected = True
                     with self.cv:
                         self.cv.notifyAll()
                 else:
                     print data
             except socket.timeout:
                 # print "Receive Heartheat timeout"
-                wifiConnected = False
+                self.wifiConnected = False
 
 
 if __name__ == '__main__':

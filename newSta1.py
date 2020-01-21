@@ -123,20 +123,17 @@ class FTPClient:
         sock.bind((self.localIP, 5009))
         sock.settimeout(10)
 
-        if self.wifiConnected:
-            print("HURAYYYYYYYYYYYYYYYYYYYY")
-
         while True:
             try:
                 data, addr = sock.recvfrom(1024)
                 if data.startswith("H"):
                     # print "HeartBeat Received"
-                    wifiConnected = True
+                    self.wifiConnected = True
                 else:
                     print data
             except socket.timeout:
                 # print "Receive Heartheat timeout"
-                wifiConnected = False
+                self.wifiConnected = False
 
 
 if __name__ == '__main__':
