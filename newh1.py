@@ -70,6 +70,7 @@ class FTPServer:
             try:
                 fileName, addr = self.sockR.recvfrom(1024) # buffer size is 1024 bytes
             except socket.timeout:
+                print "Timeout" # Temp
                 continue
             print "requested file: ", fileName
 
@@ -87,11 +88,11 @@ class FTPServer:
 
             #send file with multithread on multiple link
 
-            sendFileThread = threading.Thread(target=self.sendFileChunks, args=())
-            sendFileThread.start()
-            
             sendFileThreadH = threading.Thread(target=self.sendFileChunksH, args=())
             sendFileThreadH.start()
+            
+            sendFileThread = threading.Thread(target=self.sendFileChunks, args=())
+            sendFileThread.start()
                         
             sendFileThread.join()
             sendFileThreadH.join()
@@ -135,11 +136,11 @@ class FTPServer:
                 if not self.fileBlockReceived[i]:
                     
                     # Wait for Wifi
-                    while not self.wifiConnected:
-                        if sum(self.fileBlockReceived) >= self.fileLength:
-                            return
-                        with self.cv:
-                            self.cv.wait(0.5)
+                    #while not self.wifiConnected:
+                    #    if sum(self.fileBlockReceived) >= self.fileLength:
+                    #        return
+                    #    with self.cv:
+                    #        self.cv.wait(0.5)
                     
                     # TODO use packet instead of plain string
                     self.sockSH.sendto(str(i) + " " + self.fileBlocks[i], (self.remoteIPH, self.recvPort)) # Temporary

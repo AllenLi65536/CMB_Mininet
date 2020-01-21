@@ -16,6 +16,9 @@ class FTPClient:
         self.fileLength = 0
         self.wifiConnected = False
 
+        self.highBlocks = 0
+        self.lowBlocks = 0
+
         self.remoteIPH = "10.1.0.3"
         self.remoteIP = "10.0.0.3"
 
@@ -75,6 +78,11 @@ class FTPClient:
                     break
                 else:
                     isTimeout = False # Redundant line but easier to understand
+                    
+                    # Ack pending acks (Just double check)
+                    # TODO use packet instead of plain string
+                    seqNum = int(data.split(" ")[0])  # Temporary
+                    self.sockS.sendto("Ack " + str(seqNum), (self.remoteIP, self.recvAckPort))
                     print(data)
             
             self.fileBlockReceived = [False] * self.fileLength
@@ -82,6 +90,9 @@ class FTPClient:
             print("recving file")
 
             t1 = time.time()
+        
+            self.highBlocks = 0
+            self.lowBlocks = 0
 
             lowChunkThread = threading.Thread(target=self.receiveFileChunks, args=(self.sockR, self.sockS, False))
             highChunkThread = threading.Thread(target=self.receiveFileChunks, args=(self.sockRH, self.sockSH, True))
@@ -93,8 +104,32 @@ class FTPClient:
 
             delta = time.time() - t1
             print("recv completed!")
-            print("time elapsed: ", delta)
+            print("time elapsed: " + str(delta) + " seconds")
             print("speed: " + str(self.fileLength / delta) + "Blocks/second")
+            print("Blocks sent through Wifi: " + str(self.highBlocks))
+            print("Blocks sent through mobile network: " + str(self.lowBlocks))
+            
+            # Ack pending acks
+            time.sleep(1.5) # temporary
+            while True:
+                try:
+                    data,addr = self.sockR.recvfrom(1024)
+                except socket.timeout:
+                   break
+                    
+                # TODO use packet instead of plain string
+                seqNum = int(data.split(" ")[0])  # Temporary
+                self.sockS.sendto("Ack " + str(seqNum), (self.remoteIP, self.recvAckPort))
+            
+            while True:
+                try:
+                    data,addr = self.sockRH.recvfrom(1024)
+                except socket.timeout:
+                   break
+                    
+                # TODO use packet instead of plain string
+                seqNum = int(data.split(" ")[0])  # Temporary
+                self.sockS.sendto("Ack " + str(seqNum), (self.remoteIP, self.recvAckPort))
     
     def receiveFileChunks(self, receiver, sender, isHighSpeed):
         while sum(self.fileBlockReceived) < self.fileLength:
@@ -103,16 +138,20 @@ class FTPClient:
                 data, addr = receiver.recvfrom(1024)
             except socket.timeout:
                 continue
+            
+            # TODO use packet instead of plain string
             seqNum = int(data.split(" ")[0])  # Temporary
 
             # Send ACK
             if isHighSpeed:
-                print "Received through Wifi ", str(seqNum)
+                # print "Received through Wifi ", str(seqNum)
                 # TODO use packet instead of plain string
                 sender.sendto("Ack " + str(seqNum), (self.remoteIPH, self.recvAckPort))
+                self.highBlocks += 1
             else:
                 # TODO use packet instead of plain string
                 sender.sendto("Ack " + str(seqNum), (self.remoteIP, self.recvAckPort))
+                self.lowBlocks += 1
 
             self.fileBlocks[seqNum] = data.split(" ")[1:]  # Temporary
             self.fileBlockReceived[seqNum] = True
