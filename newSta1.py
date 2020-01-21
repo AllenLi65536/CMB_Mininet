@@ -55,12 +55,18 @@ class FTPClient:
             print "Input request filename:",
             fileName = sys.stdin.readline()
             self.fileLength = 0
+            
+            isTimeout = True
             while True:
-                self.sockS.sendto(fileName, (self.remoteIP, self.recvPort))
+                if isTimeout: 
+                    self.sockS.sendto(fileName, (self.remoteIP, self.recvPort))
+                    isTimeout = False
                 try:
                     data,addr = self.sockR.recvfrom(1024)
                 except socket.timeout:
+                    isTimeout = True
                     continue
+                
                 # TODO use packet instead of plain string
                 if data.startswith("Ack"):
                     # TODO use packet instead of plain string
@@ -68,7 +74,9 @@ class FTPClient:
                     print("Ack received, fileLength: " + str(self.fileLength))
                     break
                 else:
+                    isTimeout = False # Redundant line but easier to understand
                     print(data)
+            
             self.fileBlockReceived = [False] * self.fileLength
             self.fileBlocks = [0] * self.fileLength
             print("recving file")

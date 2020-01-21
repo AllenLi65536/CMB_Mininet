@@ -21,7 +21,7 @@ def getFileChunks(fileName, chunkSize = 1000):
     # TODO openfile and return chunks of file
 
     fileLength = random.randint(1,30000) #Temporary
-    blocksOfFile = [str(i) + " " + str(i) for i in range(fileLength)] #Temporary
+    blocksOfFile = [str(i) for i in range(fileLength)] #Temporary
     
     return blocksOfFile
 
