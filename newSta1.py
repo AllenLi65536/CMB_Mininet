@@ -2,6 +2,7 @@ import socket
 import threading
 import time
 import sys
+import util
 
 #how to use: 
 #app = FTPClient()
@@ -109,6 +110,9 @@ class FTPClient:
             print("speed: " + str(self.fileLength / delta) + "Blocks/second")
             print("Blocks sent through Wifi: " + str(self.highBlocks))
             print("Blocks sent through mobile network: " + str(self.lowBlocks))
+
+            util.saveFileFromChunks(self.fileBlocks, fileName)
+            
             
             # Ack pending acks
             time.sleep(1.5) # temporary
@@ -127,8 +131,7 @@ class FTPClient:
                     data,addr = self.sockRH.recvfrom(1024)
                 except socket.timeout:
                    break
-                print "got data la"
-                print data
+              
                 # TODO use packet instead of plain string
                 seqNum = int(data.split(" ")[0])  # Temporary
                 self.sockS.sendto("Ack " + str(seqNum), (self.remoteIP, self.recvAckPort))
@@ -140,7 +143,7 @@ class FTPClient:
                 data, addr = receiver.recvfrom(1024)
             except socket.timeout:
                 continue
-
+            
             # TODO use packet instead of plain string
             seqNum = int(data.split(" ")[0])  # Temporary
 
@@ -154,8 +157,8 @@ class FTPClient:
                 # TODO use packet instead of plain string
                 sender.sendto("Ack " + str(seqNum), (self.remoteIP, self.recvAckPort))
                 self.lowBlocks += 1
-
-            self.fileBlocks[seqNum] = data.split(" ")[1:]  # Temporary
+            
+            self.fileBlocks[seqNum] = (" ").join(data.split(" ")[1:])  # Temporary
             self.fileBlockReceived[seqNum] = True
 
 

@@ -81,7 +81,7 @@ class FTPServer:
             self.fileBlockReceived = [False] * self.fileLength
             
             # TODO use packet instead of plain string
-            self.sockS.sendto(util.toByte("Ack " + str(self.fileLength)), (self.remoteIP, self.recvPort))
+            self.sockS.sendto("Ack " + str(self.fileLength), (self.remoteIP, self.recvPort))
             
             # Wait for RTT
             time.sleep(0.3) # temporary
@@ -116,6 +116,7 @@ class FTPServer:
             for i in range(self.fileLength):
                 if not self.fileBlockReceived[i]:
                     # TODO use packet instead of plain string
+
                     self.sockS.sendto(str(i) + " " + self.fileBlocks[i], (self.remoteIP, self.recvPort)) # Temporary
     
     #Send file through wifi

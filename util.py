@@ -34,17 +34,21 @@ def getFileChunks(fileName, chunkSize = 1000):
         result.append(temp)
     return result
     '''
-
-    result = []
-    file = open(fileName, 'rb')
-    return file.read()
-
-    
-    return blocksOfFile
+    print('file name: ' + fileName[:-1]) #remove \n
+    file = open(fileName[:-1], 'rb')
+    data = file.read()
+    file.close()
+    return data
 
 def saveFileFromChunks(blocksOfFile, fileName):
-    # TODO Save chunks into file
-    return 0
+    print(getFileChunks(fileName))
+    newname = fileName.split('.')[0] + ' copy.' + fileName.split('.')[1]
+    file = open(newname, 'wb')
+    print("--------------------------------------------------------------")
+    print(blocksOfFile)
+    for i in blocksOfFile:
+        file.write(i[0])
+    file.close()
 
 def toByte(data):
     return data.encode('utf-8')
