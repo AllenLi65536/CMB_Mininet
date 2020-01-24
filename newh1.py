@@ -8,6 +8,7 @@ import util
 #app = FTPServer()
 #app.run()
 
+
 class FTPServer:
     def __init__(self):
 
@@ -72,14 +73,15 @@ class FTPServer:
             except socket.timeout:
                 print "Timeout" # Temp
                 continue
+            fileName = util.toString(fileName)
             print "requested file: ", fileName
 
-            self.fileBlocks = util.getFileChunks(fileName)
+            self.fileBlocks = util.getFileChunks(fileName) # TODO RESOLVED
             self.fileLength = len(self.fileBlocks)
             self.fileBlockReceived = [False] * self.fileLength
             
             # TODO use packet instead of plain string
-            self.sockS.sendto("Ack " + str(self.fileLength), (self.remoteIP, self.recvPort))
+            self.sockS.sendto(util.toByte("Ack " + str(self.fileLength)), (self.remoteIP, self.recvPort))
             
             # Wait for RTT
             time.sleep(0.3) # temporary

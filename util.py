@@ -20,14 +20,37 @@ def RecvACK(sock):
 def getFileChunks(fileName, chunkSize = 1000):
     # TODO openfile and return chunks of file
 
-    fileLength = random.randint(1,30000) #Temporary
-    blocksOfFile = [str(i) for i in range(fileLength)] #Temporary
+
+    '''
+    version 1
+    result = []
+    file = open(fileName, 'rb')
+    data = file.read()
+    for i in range(0,chunkSize,3):
+        temp = []
+        j = 0
+        while i+j < len(data) or j == 3:
+            temp.append(data[i+j])
+        result.append(temp)
+    return result
+    '''
+
+    result = []
+    file = open(fileName, 'rb')
+    return file.read()
+
     
     return blocksOfFile
 
 def saveFileFromChunks(blocksOfFile, fileName):
     # TODO Save chunks into file
     return 0
+
+def toByte(data):
+    return data.encode('utf-8')
+
+def toString(data):
+    return data.decode('utf-8')
 
 
 class Packet:

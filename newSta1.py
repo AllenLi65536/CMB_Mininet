@@ -7,6 +7,7 @@ import sys
 #app = FTPClient()
 #app.run()
 
+
 class FTPClient:
     def __init__(self):
 
@@ -126,7 +127,8 @@ class FTPClient:
                     data,addr = self.sockRH.recvfrom(1024)
                 except socket.timeout:
                    break
-                    
+                print "got data la"
+                print data
                 # TODO use packet instead of plain string
                 seqNum = int(data.split(" ")[0])  # Temporary
                 self.sockS.sendto("Ack " + str(seqNum), (self.remoteIP, self.recvAckPort))
@@ -138,7 +140,7 @@ class FTPClient:
                 data, addr = receiver.recvfrom(1024)
             except socket.timeout:
                 continue
-            
+
             # TODO use packet instead of plain string
             seqNum = int(data.split(" ")[0])  # Temporary
 
