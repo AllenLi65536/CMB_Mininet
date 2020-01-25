@@ -56,6 +56,22 @@ def toByte(data):
 def toString(data):
     return data.decode('utf-8')
 
+def getPacket(isAck, seqNumber, data = None):
+    if isAck:
+        return bytes(0) + bytes(seqNumber)
+    else:
+        return bytes(1) + bytes(seqNumber) + data
+
+def getValueFromPacket(packet):
+    data = packet[-1]
+    if int(packet[0]) == 1:
+        #isNotAck
+        return (False, int(packet[1:-1]), packet[-1])
+    else:
+        return (True, packet[0], int(packet[1:]))
+
+
+
 
 class Packet:
     def __init__(self, seq, ack, isSyn, isAck):

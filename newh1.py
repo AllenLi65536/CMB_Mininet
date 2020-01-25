@@ -115,9 +115,9 @@ class FTPServer:
             
             for i in range(self.fileLength):
                 if not self.fileBlockReceived[i]:
-                    # TODO use packet instead of plain string
-
-                    self.sockS.sendto(str(i) + " " + self.fileBlocks[i], (self.remoteIP, self.recvPort)) # Temporary
+                    # TODO use packet instead of plain string // [RESOLVED]
+                    packet = util.getPacket(False,i,  self.fileBlocks[i])
+                    self.sockS.sendto(packet, (self.remoteIP, self.recvPort)) # Temporary
     
     #Send file through wifi
     def sendFileChunksH(self):
@@ -145,8 +145,9 @@ class FTPServer:
                     #    with self.cv:
                     #        self.cv.wait(0.5)
                     
-                    # TODO use packet instead of plain string
-                    self.sockSH.sendto(str(i) + " " + self.fileBlocks[i], (self.remoteIPH, self.recvPort)) # Temporary
+                    # TODO use packet instead of plain string // RESOLVED
+                    packet = util.getPacket(False,i, self.fileBlocks[i])
+                    self.sockSH.sendto(packet, (self.remoteIPH, self.recvPort)) # Temporary
 
     def receiveAcks(self, sock):
         # Receive ACK
@@ -155,13 +156,13 @@ class FTPServer:
                 data, addr = sock.recvfrom(1024)
             except socket.timeout:
                 continue
-            # TODO use packet instead of plain string
-            if data.startswith("Ack"):
-                ackNum = int(data.split(" ")[1])  # Temporary
-                self.fileBlockReceived[ackNum] = True
-                print "Ack received ", ackNum
+            result = util.getValueFromPacket(data)
+            if result[0] == True:
+                self.fileBlockReceived[int(result[2])] = True
+                print "Ack received ", result[1]
             else:
-                print(data)
+                print(result)
+            
         
     def sendHeartbeat(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # INTERNET, UDP

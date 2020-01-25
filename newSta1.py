@@ -121,10 +121,11 @@ class FTPClient:
                     data,addr = self.sockR.recvfrom(1024)
                 except socket.timeout:
                    break
-                    
-                # TODO use packet instead of plain string
-                seqNum = int(data.split(" ")[0])  # Temporary
-                self.sockS.sendto("Ack " + str(seqNum), (self.remoteIP, self.recvAckPort))
+                data = util.getValueFromPacket(data)
+                seqNum = data[1]
+                packet = util.getPacket(True, seqNum)
+               
+                self.sockS.sendto(packet, (self.remoteIP, self.recvAckPort))
             
             while True:
                 try:
@@ -132,9 +133,15 @@ class FTPClient:
                 except socket.timeout:
                    break
               
+                data = util.getValueFromPacket(data)
+                seqNum = data[1]
+                packet = util.getPacket(True, seqNum)
+                self.sockS.sendto(packet, (self.remoteIP, self.recvAckPort))
+                """
                 # TODO use packet instead of plain string
                 seqNum = int(data.split(" ")[0])  # Temporary
                 self.sockS.sendto("Ack " + str(seqNum), (self.remoteIP, self.recvAckPort))
+                """
     
     def receiveFileChunks(self, receiver, sender, isHighSpeed):
         while sum(self.fileBlockReceived) < self.fileLength:
@@ -143,7 +150,28 @@ class FTPClient:
                 data, addr = receiver.recvfrom(1024)
             except socket.timeout:
                 continue
-            
+            data = util.getValueFromPacket(data)
+            seqNum = data[1]
+            packet = util.getPacket(True, seqNum)
+            # Send ACK
+            if isHighSpeed:
+                # print "Received through Wifi ", str(seqNum)
+                # TODO use packet instead of plain string
+                
+                sender.sendto(packet, (self.remoteIPH, self.recvAckPort))
+                self.highBlocks += 1
+            else:
+                # TODO use packet instead of plain string
+                sender.sendto(packet, (self.remoteIP, self.recvAckPort))
+                self.lowBlocks += 1
+
+            self.fileBlocks[seqNum] = data[2]
+            self.fileBlockReceived[seqNum] = True
+
+
+            """
+
+
             # TODO use packet instead of plain string
             seqNum = int(data.split(" ")[0])  # Temporary
 
@@ -160,6 +188,8 @@ class FTPClient:
             
             self.fileBlocks[seqNum] = (" ").join(data.split(" ")[1:])  # Temporary
             self.fileBlockReceived[seqNum] = True
+
+            """
 
 
     def sendHeartbeat(self):
