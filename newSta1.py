@@ -156,6 +156,8 @@ class FTPClient:
             
             # Use packet instead of plain string
             data = util.getValueFromPacket(data)
+            print("data")
+            print(data)
             seqNum = data[1]
             packet = util.getPacket(True, seqNum)
             # Send ACK
