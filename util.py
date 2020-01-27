@@ -63,9 +63,27 @@ def toByte(data):
 def toString(data):
     return data.decode('utf-8')
 
+def intToBytes(value, length):
+    result = []
+
+    for i in range(0, length):
+        result.append(value >> (i * 8) & 0xff)
+    result.reverse()
+
+    return result
+
+def bytesToInt(bytes):
+    result = 0
+
+    for b in bytes:
+        result = result * 256 + int(b)
+    return result
+
+
 def getPacket(isAck, seqNumber, data = None):
-    seq = bytearray(10-len(str(seqNumber)))
-    seq = seq + bytes(str(seqNumber))
+    #seq = bytearray(10-len(str(seqNumber)))
+    #seq = seq + bytes(str(seqNumber))
+    seq = intToBytes(seqNumber, 10)
     # TODO Problem: seqNumber should have more than one byte
     if isAck:
         #return bytes(0) + bytes(seqNumber)
@@ -76,14 +94,16 @@ def getPacket(isAck, seqNumber, data = None):
 
 def getValueFromPacket(packet):
     # TODO make seqNumber longer
+
+    seqNum = bytesToInt(packet[1:11])
         
     if int(packet[0]) == 1:
         #isNotAck
         # TODO seqNum should have more than one byte
-        return (False, int(packet[1:11]), packet[11:])
+        return (False, seqNum, packet[11:])
     else:
         # TODO seqNum should have more than one byte
-        return (True, int(packet[1:11]), int(packet[1:11]))
+        return (True, seqNum, seqNum)
 
 class Packet:
     def __init__(self, seq, ack, isSyn, isAck):
