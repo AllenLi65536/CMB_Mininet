@@ -36,17 +36,19 @@ def getFileChunks(fileName, chunkSize = 1000):
     '''
     print('file name: ' + fileName[:-1]) #remove \n
     file = open(fileName[:-1], 'rb')
+    # TODO Problem: this is not correct
     data = file.read()
     file.close()
     return data
 
 def saveFileFromChunks(blocksOfFile, fileName):
     print(getFileChunks(fileName))
-    newname = fileName.split('.')[0] + ' copy.' + fileName.split('.')[1]
+    newname = fileName.split('.')[0] + '_copy.' + fileName.split('.')[1]
     file = open(newname, 'wb')
     print("--------------------------------------------------------------")
     print(blocksOfFile)
     for i in blocksOfFile:
+        # TODO Problem: write only one byte!?
         file.write(i[0])
     file.close()
 
@@ -57,17 +59,21 @@ def toString(data):
     return data.decode('utf-8')
 
 def getPacket(isAck, seqNumber, data = None):
+    # TODO Problem: bytes(seqNumber) might not have same length
     if isAck:
         return bytes(0) + bytes(seqNumber)
     else:
         return bytes(1) + bytes(seqNumber) + data
 
 def getValueFromPacket(packet):
+    # TODO Problem: data only one byte!?
     data = packet[-1]
     if int(packet[0]) == 1:
         #isNotAck
+        # TODO Problem seqNum might have more than one byte
         return (False, int(packet[1:-1]), packet[-1])
     else:
+        # TODO Problem seqNum might have more than one byte
         return (True, packet[0], int(packet[1:]))
 
 

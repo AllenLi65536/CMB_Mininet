@@ -71,12 +71,12 @@ class FTPServer:
             try:
                 fileName, addr = self.sockR.recvfrom(1024) # buffer size is 1024 bytes
             except socket.timeout:
-                print "Timeout" # Temp
+                #print "Timeout" # Temp
                 continue
             fileName = util.toString(fileName)
             print "requested file: ", fileName
 
-            self.fileBlocks = util.getFileChunks(fileName) # TODO RESOLVED
+            self.fileBlocks = util.getFileChunks(fileName) # TODO Fix Problem
             self.fileLength = len(self.fileBlocks)
             self.fileBlockReceived = [False] * self.fileLength
             
@@ -116,7 +116,7 @@ class FTPServer:
             for i in range(self.fileLength):
                 if not self.fileBlockReceived[i]:
                     # TODO use packet instead of plain string // [RESOLVED]
-                    packet = util.getPacket(False,i,  self.fileBlocks[i])
+                    packet = util.getPacket(False, i, self.fileBlocks[i])
                     self.sockS.sendto(packet, (self.remoteIP, self.recvPort)) # Temporary
     
     #Send file through wifi
@@ -146,7 +146,7 @@ class FTPServer:
                     #        self.cv.wait(0.5)
                     
                     # TODO use packet instead of plain string // RESOLVED
-                    packet = util.getPacket(False,i, self.fileBlocks[i])
+                    packet = util.getPacket(False, i, self.fileBlocks[i])
                     self.sockSH.sendto(packet, (self.remoteIPH, self.recvPort)) # Temporary
 
     def receiveAcks(self, sock):
@@ -157,9 +157,9 @@ class FTPServer:
             except socket.timeout:
                 continue
             result = util.getValueFromPacket(data)
-            if result[0] == True:
+            if result[0]:
                 self.fileBlockReceived[int(result[2])] = True
-                print "Ack received ", result[1]
+                print "Ack received ", int(result[2])
             else:
                 print(result)
             

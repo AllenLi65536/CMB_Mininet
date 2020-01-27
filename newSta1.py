@@ -121,6 +121,7 @@ class FTPClient:
                     data,addr = self.sockR.recvfrom(1024)
                 except socket.timeout:
                    break
+                # TODO Fix it
                 data = util.getValueFromPacket(data)
                 seqNum = data[1]
                 packet = util.getPacket(True, seqNum)
@@ -133,6 +134,7 @@ class FTPClient:
                 except socket.timeout:
                    break
               
+                # TODO Fix it
                 data = util.getValueFromPacket(data)
                 seqNum = data[1]
                 packet = util.getPacket(True, seqNum)
@@ -150,6 +152,7 @@ class FTPClient:
                 data, addr = receiver.recvfrom(1024)
             except socket.timeout:
                 continue
+            # TODO Fix it
             data = util.getValueFromPacket(data)
             seqNum = data[1]
             packet = util.getPacket(True, seqNum)
