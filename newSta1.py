@@ -170,8 +170,6 @@ class FTPClient:
 
 
             """
-
-
             # TODO use packet instead of plain string
             seqNum = int(data.split(" ")[0])  # Temporary
 
@@ -198,12 +196,12 @@ class FTPClient:
 
         while True:
             sock.sendto("H", (self.remoteIP, 5009))
-            time.sleep(4)
+            time.sleep(1)
 
     def receiveHeartbeat(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # INTERNET, UDP
         sock.bind((self.localIP, 5009))
-        sock.settimeout(10)
+        sock.settimeout(15)
 
         while True:
             try:
