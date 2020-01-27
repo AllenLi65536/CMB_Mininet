@@ -67,6 +67,8 @@ class FTPServer:
         recvAckThread.start()
         recvAckThreadH.start()
 
+        print "Server started"
+
         while True:
             try:
                 fileName, addr = self.sockR.recvfrom(1024) # buffer size is 1024 bytes
