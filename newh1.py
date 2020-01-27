@@ -99,9 +99,6 @@ class FTPServer:
             sendFileThread.join()
             sendFileThreadH.join()
             
-            #for i in range(self.fileLength):
-            #    self.sockS.sendto(self.fileBlocks[i], (self.remoteIP, self.recvPort)) # Temporary
-                
             print "Send file completed"
 
     #Send file through mobile network
@@ -115,9 +112,9 @@ class FTPServer:
             
             for i in range(self.fileLength):
                 if not self.fileBlockReceived[i]:
-                    # TODO use packet instead of plain string // [RESOLVED]
+                    # Use packet instead of plain string 
                     packet = util.getPacket(False, i, self.fileBlocks[i])
-                    self.sockS.sendto(packet, (self.remoteIP, self.recvPort)) # Temporary
+                    self.sockS.sendto(packet, (self.remoteIP, self.recvPort))
     
     #Send file through wifi
     def sendFileChunksH(self):
@@ -145,9 +142,9 @@ class FTPServer:
                     #    with self.cv:
                     #        self.cv.wait(0.5)
                     
-                    # TODO use packet instead of plain string // RESOLVED
+                    # Use packet instead of plain string
                     packet = util.getPacket(False, i, self.fileBlocks[i])
-                    self.sockSH.sendto(packet, (self.remoteIPH, self.recvPort)) # Temporary
+                    self.sockSH.sendto(packet, (self.remoteIPH, self.recvPort))
 
     def receiveAcks(self, sock):
         # Receive ACK

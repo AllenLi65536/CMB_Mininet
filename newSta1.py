@@ -59,6 +59,7 @@ class FTPClient:
         while True:
             print "Input request filename:",
             fileName = sys.stdin.readline()
+            filName = fileName[:-1] # Remove \n
             self.fileLength = 0
             
             isTimeout = True
@@ -82,9 +83,13 @@ class FTPClient:
                     isTimeout = False # Redundant line but easier to understand
                     
                     # Ack pending acks (Just double check)
-                    # TODO use packet instead of plain string
-                    seqNum = int(data.split(" ")[0])  # Temporary
-                    self.sockS.sendto("Ack " + str(seqNum), (self.remoteIP, self.recvAckPort))
+                    # Use packet instead of plain string
+                    data = util.getValueFromPacket(data)
+                    seqNum = data[1]
+                    packet = util.getPacket(True, seqNum)
+                    #seqNum = int(data.split(" ")[0])  # Temporary
+                    #self.sockS.sendto("Ack " + str(seqNum), (self.remoteIP, self.recvAckPort))
+                    self.sockS.sendto(packet, (self.remoteIP, self.recvAckPort))
                     print(data)
             
             self.fileBlockReceived = [False] * self.fileLength
@@ -121,11 +126,10 @@ class FTPClient:
                     data,addr = self.sockR.recvfrom(1024)
                 except socket.timeout:
                    break
-                # TODO Fix it
-                data = util.getValueFromPacket(data)
+                
+               data = util.getValueFromPacket(data)
                 seqNum = data[1]
                 packet = util.getPacket(True, seqNum)
-               
                 self.sockS.sendto(packet, (self.remoteIP, self.recvAckPort))
             
             while True:
@@ -134,16 +138,13 @@ class FTPClient:
                 except socket.timeout:
                    break
               
-                # TODO Fix it
+                # Use packet instead of plain string
                 data = util.getValueFromPacket(data)
                 seqNum = data[1]
                 packet = util.getPacket(True, seqNum)
                 self.sockS.sendto(packet, (self.remoteIP, self.recvAckPort))
-                """
-                # TODO use packet instead of plain string
-                seqNum = int(data.split(" ")[0])  # Temporary
-                self.sockS.sendto("Ack " + str(seqNum), (self.remoteIP, self.recvAckPort))
-                """
+                #seqNum = int(data.split(" ")[0])  # Temporary
+                #self.sockS.sendto("Ack " + str(seqNum), (self.remoteIP, self.recvAckPort))
     
     def receiveFileChunks(self, receiver, sender, isHighSpeed):
         while sum(self.fileBlockReceived) < self.fileLength:
@@ -152,19 +153,17 @@ class FTPClient:
                 data, addr = receiver.recvfrom(1024)
             except socket.timeout:
                 continue
-            # TODO Fix it
+            
+            # Use packet instead of plain string
             data = util.getValueFromPacket(data)
             seqNum = data[1]
             packet = util.getPacket(True, seqNum)
             # Send ACK
             if isHighSpeed:
                 # print "Received through Wifi ", str(seqNum)
-                # TODO use packet instead of plain string
-                
                 sender.sendto(packet, (self.remoteIPH, self.recvAckPort))
                 self.highBlocks += 1
             else:
-                # TODO use packet instead of plain string
                 sender.sendto(packet, (self.remoteIP, self.recvAckPort))
                 self.lowBlocks += 1
 
