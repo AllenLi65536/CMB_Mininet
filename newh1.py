@@ -16,6 +16,7 @@ class FTPServer:
         self.fileBlockReceived = [False]
         self.fileBlocks = [0]
         self.fileLength = 0
+
         self.wifiConnected = False
         self.cv = threading.Condition()
 
@@ -76,10 +77,12 @@ class FTPServer:
                 #print "Timeout" # Temp
                 continue
             fileName = util.toString(fileName)
-            filName = fileName[:-1] # Remove \n
+            fileName = fileName[:-1] # Remove \n
             print "requested file: ", fileName
 
             self.fileBlocks = util.getFileChunks(fileName) # TODO Fix Problem
+            print("blocks")
+            print(self.fileBlocks)
             self.fileLength = len(self.fileBlocks)
             self.fileBlockReceived = [False] * self.fileLength
             

@@ -2,6 +2,8 @@ import multiprocessing
 
 import random #temporary
 
+CHUNK_SIZE = 1000
+
 def RecvACKprocess(sock):
     while True:
         data, addr = sock.recvfrom(1024)
@@ -48,8 +50,11 @@ def saveFileFromChunks(blocksOfFile, fileName):
     #print(blocksOfFile) # DEBUG
     
     for block in blocksOfFile:
-        for byte in block:
-            file.write(byte)
+        try:
+            for byte in block:
+                file.write(byte)
+        except:
+            break
     file.close()
 
 def toByte(data):
@@ -68,13 +73,14 @@ def getPacket(isAck, seqNumber, data = None):
 def getValueFromPacket(packet):
     # TODO make seqNumber longer
     data = packet[2:]
+        
     if int(packet[0]) == 1:
         #isNotAck
         # TODO seqNum should have more than one byte
-        return (False, int(packet[1]), packet[2:])
+        return (False, int(packet[1:-CHUNK_SIZE]), packet[-CHUNK_SIZE:])
     else:
         # TODO seqNum should have more than one byte
-        return (True, int(packet[1]), int(packet[1]))
+        return (True, int(packet[0]), int(packet[1:]))
 
 class Packet:
     def __init__(self, seq, ack, isSyn, isAck):
