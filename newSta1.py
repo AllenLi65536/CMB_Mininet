@@ -127,7 +127,7 @@ class FTPClient:
                 except socket.timeout:
                    break
                 
-               data = util.getValueFromPacket(data)
+                data = util.getValueFromPacket(data)
                 seqNum = data[1]
                 packet = util.getPacket(True, seqNum)
                 self.sockS.sendto(packet, (self.remoteIP, self.recvAckPort))

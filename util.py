@@ -23,7 +23,7 @@ def getFileChunks(fileName, chunkSize = 1000):
     #version 1
     result = []
     #print('file name: ' + fileName[:-1])
-    file = open(fileName, 'rb')
+    file = open(fileName[:-1], 'rb')
     
     data = file.read()
     i = 0
