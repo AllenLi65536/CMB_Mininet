@@ -26,12 +26,15 @@ def getFileChunks(fileName, chunkSize = 1000):
     result = []
     file = open(fileName, 'rb')
     data = file.read()
-    for i in range(0,chunkSize,3):
+    i = 0
+    while i < len(data):
         temp = []
         j = 0
-        while i+j < len(data) or j == 3:
+        while i+j < len(data) and j <= chunkSize:
             temp.append(data[i+j])
+            j += 1
         result.append(temp)
+        i += j
     return result
     '''
     print('file name: ' + fileName[:-1]) #remove \n
