@@ -1,119 +1,203 @@
 import socket
-import util
-import sys
+import threading
 import time
-import multiprocessing
-
-def ReceiveHeartbeat(LocalIP, LocalPort, RemoteIP, RemotePort):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
-    sock.bind((LocalIP, LocalPort))
-    sock.settimeout(10)
-
-    while True:
-        try:
-            data, addr = sock.recvfrom(1024)
-            if data.startswith("HeartBeat"):
-                #print "HeartBeat Received"
-                wifiConnected = True
+import sys
+import util
+ 
+#how to use:
+#app = FTPServer()
+#app.run()
+ 
+ 
+class FTPServer:
+    def __init__(self):
+ 
+        #global here
+        self.fileBlockReceived = [False]
+        self.fileBlocks = [0]
+        self.fileLength = 0
+        self.wifiConnected = False
+        self.cv = threading.Condition()
+ 
+        self.localIPH = "10.1.0.3"
+        self.localIP = "10.0.0.3"
+ 
+        self.remoteIPH = "10.1.0.2"
+        self.remoteIP = "10.0.0.2"
+ 
+        self.sendPort = 5005
+        self.recvPort = 5006
+        self.recvAckPort = 5007
+ 
+        self.initSocket()
+        self.initHeartBeat()
+ 
+    def initSocket(self):
+        self.sockS = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sockS.bind((self.localIP, self.sendPort))
+ 
+        self.sockSH = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sockSH.bind((self.localIPH, self.sendPort))
+ 
+        self.sockR = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sockR.bind((self.localIP, self.recvPort))
+        self.sockR.settimeout(1)
+ 
+        self.sockRH = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sockRH.bind((self.localIPH, self.recvPort))
+        self.sockRH.settimeout(1)
+       
+        self.sockRAck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sockRAck.bind((self.localIP, self.recvAckPort))
+        self.sockRAck.settimeout(1)
+       
+        self.sockRAckH = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sockRAckH.bind((self.localIPH, self.recvAckPort))
+        self.sockRAckH.settimeout(1)
+ 
+    def initHeartBeat(self):
+        self.sendHeartBeatThread = threading.Thread(target=self.sendHeartbeat)
+        self.recvHeartBeatThread = threading.Thread(target=self.receiveHeartbeat)
+        self.sendHeartBeatThread.start()
+        self.recvHeartBeatThread.start()
+ 
+    def run(self):
+        recvAckThread = threading.Thread(target=self.receiveAcks, args=(self.sockRAck,))
+        recvAckThreadH = threading.Thread(target=self.receiveAcks, args=(self.sockRAckH,))
+        recvAckThread.start()
+        recvAckThreadH.start()
+ 
+        while True:
+            try:
+                fileName, addr = self.sockR.recvfrom(1024) # buffer size is 1024 bytes
+            except socket.timeout:
+                #print "Timeout" # Temp
+                continue
+            fileName = util.toString(fileName)
+            print "requested file: ", fileName
+ 
+            self.fileBlocks = util.getFileChunks(fileName) # TODO Fix Problem
+            self.fileLength = len(self.fileBlocks)
+            self.fileBlockReceived = [False] * self.fileLength
+ 
+            print(self.fileBlocks)
+        print(self.fileLength)
+        print(self.fileBlockReceived)
+           
+            # TODO use packet instead of plain string
+            self.sockS.sendto("Ack " + str(self.fileLength), (self.remoteIP, self.recvPort))
+           
+            # Wait for RTT
+            time.sleep(0.3) # temporary
+ 
+            print "Sending file"
+ 
+            #send file with multithread on multiple link
+ 
+            sendFileThreadH = threading.Thread(target=self.sendFileChunksH, args=())
+            sendFileThreadH.start()
+           
+            sendFileThread = threading.Thread(target=self.sendFileChunks, args=())
+            sendFileThread.start()
+                       
+            sendFileThread.join()
+            sendFileThreadH.join()
+           
+            #for i in range(self.fileLength):
+            #    self.sockS.sendto(self.fileBlocks[i], (self.remoteIP, self.recvPort)) # Temporary
+               
+            print "Send file completed"
+ 
+    #Send file through mobile network
+    def sendFileChunks(self):
+        firstIter = True
+        while sum(self.fileBlockReceived) < self.fileLength:
+            if not firstIter:
+                # Wait for RTT
+                time.sleep(0.5) # temporary
+            firstIter = False
+           
+            for i in range(self.fileLength):
+                if not self.fileBlockReceived[i]:
+                    # TODO use packet instead of plain string // [RESOLVED]
+                    packet = util.getPacket(False, i, self.fileBlocks[i])
+            print(packet)
+                    self.sockS.sendto(packet, (self.remoteIP, self.recvPort)) # Temporary
+   
+    #Send file through wifi
+    def sendFileChunksH(self):
+        firstIter = True
+        while sum(self.fileBlockReceived) < self.fileLength:
+            if not firstIter:
+                # Wait for RTT
+                time.sleep(0.5) # temporary
+            firstIter = False
+           
+            # Wait for Wifi
+            while not self.wifiConnected:
+                if sum(self.fileBlockReceived) >= self.fileLength:
+                    return
+                with self.cv:
+                    self.cv.wait(0.5)
+           
+            for i in range(self.fileLength-1, -1, -1): # backward from fileLength-1 to 0
+                if not self.fileBlockReceived[i]:
+                   
+                    # Wait for Wifi
+                    #while not self.wifiConnected:
+                    #    if sum(self.fileBlockReceived) >= self.fileLength:
+                    #        return
+                    #    with self.cv:
+                    #        self.cv.wait(0.5)
+                   
+                    # TODO use packet instead of plain string // RESOLVED
+                    packet = util.getPacket(False, i, self.fileBlocks[i])
+                    self.sockSH.sendto(packet, (self.remoteIPH, self.recvPort)) # Temporary
+ 
+    def receiveAcks(self, sock):
+        # Receive ACK
+        while True:
+            try:
+                data, addr = sock.recvfrom(1024)
+            except socket.timeout:
+                continue
+            result = util.getValueFromPacket(data)
+            if result[0]:
+                self.fileBlockReceived[int(result[2])] = True
+                print "Ack received ", int(result[2])
             else:
-                print data
-        except socket.timeout:
-            #print "Receive Heartheat timeout"
-            wifiConnected = False
-
-def SendHeartbeat(LocalIP, LocalPort, RemoteIP, RemotePort):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
-    sock.bind((LocalIP, LocalPort))
-
-    while True:
-        sock.sendto("HeartBeat", (RemoteIP, RemotePort))
-        time.sleep(4)
-
+                print(result)
+           
+       
+    def sendHeartbeat(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # INTERNET, UDP
+        sock.bind((self.localIP, 5010))
+ 
+        while True:
+            sock.sendto("H", (self.remoteIP, 5009))
+            time.sleep(1)
+ 
+    def receiveHeartbeat(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # INTERNET, UDP
+        sock.bind((self.localIP, 5009))
+        sock.settimeout(15)
+ 
+        while True:
+            try:
+                data, addr = sock.recvfrom(1024)
+                if data.startswith("H"):
+                    # print "HeartBeat Received"
+                    self.wifiConnected = True
+                    with self.cv:
+                        self.cv.notifyAll()
+                else:
+                    print data
+            except socket.timeout:
+                # print "Receive Heartheat timeout"
+                self.wifiConnected = False
+ 
+ 
 if __name__ == '__main__':
-
-    RemoteIPH = "10.1.0.2" # High bandwidth
-    RemoteIP = "10.0.0.2" # Low bandwidth
-
-    LocalIPH = "10.1.0.3" # High bandwidth
-    LocalIP = "10.0.0.3" # Low bandwidth
-    SendPort = 5005
-    ReceivePort = 5006
-
-    sockS = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
-    sockS.bind((LocalIP, SendPort))
-    
-    sockSH = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
-    sockSH.bind((LocalIPH, SendPort))
-    
-    sockR = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
-    sockR.bind((LocalIP, ReceivePort))
-    
-    sockRH = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # INTERNET, UDP
-    sockRH.bind((LocalIPH, ReceivePort))
-
-    wifiConnected = False
-    
-    # Start Heartbeat
-    p1 = multiprocessing.Process(target=SendHeartbeat, args=(LocalIPH, 5010, RemoteIPH, 5009))
-    p1.start()
-    p2 = multiprocessing.Process(target=ReceiveHeartbeat, args=(LocalIPH, 5009, RemoteIPH, 5010))
-    p2.start()
-
-    while True:
-        fileName, addr = sockR.recvfrom(1024) # buffer size is 1024 bytes
-        print "requested file:", fileName
-
-        blocksOfFile = util.getFileChunks(fileName)
-        fileLength = len(blocksOfFile)
-        
-        sockS.sendto("Ack " + str(fileLength), (RemoteIP, ReceivePort))
-
-        #TODO send file
-        print "Sending file"
-
-        for i in range(fileLength):
-            sockS.sendto(blocksOfFile[i], (RemoteIP, ReceivePort)) # Temporary
-        
-            # Receive ACK
-#            while True:
-#                data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
-#                if data.startswith("Ack"):
-#                    ackNum = int(data.split(" ")[1])
-#                    print "Ack received ", ackNum
-#                    break
-#                else:
-#                    print data
-#
-
-
-        print "Send file completed"
-
-
-
-
-    # FOLLOWINGS ARE FOR REFERENCE ONLY NOT USED!!
-
-    # SimpleHTTPServer
-    #import SimpleHTTPServer
-    #import SocketServer
-    #
-    #PORT = 8000
-    #
-    #Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
-    #
-    #httpd = SocketServer.TCPServer(("", PORT), Handler)
-    #
-    #print "serving at port", PORT
-    #httpd.serve_forever()
-    #
-    #
-    ## FTP SERVER
-    ## https://github.com/giampaolo/pyftpdlib
-    #from pyftpdlib import servers
-    #from pyftpdlib.handlers import FTPHandler
-    #
-    #address = ("0.0.0.0", 21)  # listen on every IP on my machine on port 21
-    #
-    #server = servers.FTPServer(address, FTPHandler)
-    #server.serve_forever()
-
+ 
+    app = FTPServer()
+    app.run()

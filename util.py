@@ -1,7 +1,7 @@
 import multiprocessing
-
+ 
 import random #temporary
-
+ 
 def RecvACKprocess(sock):
     while True:
         data, addr = sock.recvfrom(1024)
@@ -16,15 +16,13 @@ def RecvACK(sock):
     if p.is_alive():
       p.terminate()
       p.join()    
-
+ 
 def getFileChunks(fileName, chunkSize = 1000):
     # TODO openfile and return chunks of file
-
-
-    '''
-    version 1
+ 
+    #version 1
     result = []
-    file = open(fileName, 'rb')
+    file = open(fileName[:-1], 'rb')
     data = file.read()
     i = 0
     while i < len(data):
@@ -35,53 +33,64 @@ def getFileChunks(fileName, chunkSize = 1000):
             j += 1
         result.append(temp)
         i += j
-    return result
-    '''
-    print('file name: ' + fileName[:-1]) #remove \n
-    file = open(fileName[:-1], 'rb')
-    # TODO Problem: this is not correct
-    data = file.read()
     file.close()
-    return data
-
+    return result
+ 
+    print('file name: ' + fileName[:-1]) #remove \n
+    #file = open(fileName[:-1], 'rb')
+    # TODO Problem: this is not correct
+    #data = file.read()
+    #file.close()
+    #return data
+ 
 def saveFileFromChunks(blocksOfFile, fileName):
-    print(getFileChunks(fileName))
+    #print(getFileChunks(fileName))
     newname = fileName.split('.')[0] + '_copy.' + fileName.split('.')[1]
     file = open(newname, 'wb')
     print("--------------------------------------------------------------")
-    print(blocksOfFile)
+    #print(blocksOfFile)
     for i in blocksOfFile:
+    for j in range(i):
         # TODO Problem: write only one byte!?
-        file.write(i[0])
+            file.write(j[0])
     file.close()
-
+ 
 def toByte(data):
     return data.encode('utf-8')
-
+ 
 def toString(data):
     return data.decode('utf-8')
-
+ 
 def getPacket(isAck, seqNumber, data = None):
     # TODO Problem: bytes(seqNumber) might not have same length
     if isAck:
         return bytes(0) + bytes(seqNumber)
     else:
-        return bytes(1) + bytes(seqNumber) + data
-
+        return bytes(1) + bytes(seqNumber) + str(data)
+ 
 def getValueFromPacket(packet):
     # TODO Problem: data only one byte!?
-    data = packet[-1]
+    data = packet[-1000]
+    #print(data)
     if int(packet[0]) == 1:
         #isNotAck
         # TODO Problem seqNum might have more than one byte
-        return (False, int(packet[1:-1]), packet[-1])
+        return (False, int(packet[1:-1000]), packet[-1000])
     else:
         # TODO Problem seqNum might have more than one byte
         return (True, packet[0], int(packet[1:]))
-
-
-
-
+   
+    #data = packet[-1]
+    # if int(packet[0]) == 1:
+    #    #isNotAck
+    #    # TODO Problem seqNum might have more than one byte
+    #    return (False, int(packet[1:-1]), packet[-1])
+    #else:
+    #    # TODO Problem seqNum might have more than one byte
+    #    return (True, packet[0], int(packet[1:]))
+ 
+ 
+ 
 class Packet:
     def __init__(self, seq, ack, isSyn, isAck):
         self.seq = seq
