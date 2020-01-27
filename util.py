@@ -64,23 +64,26 @@ def toString(data):
     return data.decode('utf-8')
 
 def getPacket(isAck, seqNumber, data = None):
+    seq = bytearray(10-len(str(seqNumber)))
+    seq = seq + bytes(str(seqNumber))
     # TODO Problem: seqNumber should have more than one byte
     if isAck:
-        return bytes(0) + bytes(seqNumber)
+        #return bytes(0) + bytes(seqNumber)
+        return bytes(0) + seq
     else:
-        return bytes(1) + bytes(seqNumber) + bytearray(data)
+        #return bytes(1) + bytes(seqNumber) + bytearray(data)
+        return bytes(1) + seq + bytearray(data)
 
 def getValueFromPacket(packet):
     # TODO make seqNumber longer
-    data = packet[2:]
         
     if int(packet[0]) == 1:
         #isNotAck
         # TODO seqNum should have more than one byte
-        return (False, int(packet[1:-CHUNK_SIZE]), packet[-CHUNK_SIZE:])
+        return (False, int(packet[1:11]), packet[11:])
     else:
         # TODO seqNum should have more than one byte
-        return (True, int(packet[0]), int(packet[1:]))
+        return (True, int(packet[1:11]), int(packet[1:11]))
 
 class Packet:
     def __init__(self, seq, ack, isSyn, isAck):
