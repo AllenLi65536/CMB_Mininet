@@ -64,37 +64,24 @@ def bytesToInt(bytes):
     return result
 
 def getPacket(isAck, seqNumber, data = None):
-    #seq = bytearray(10-len(str(seqNumber)))
-    #seq = seq + bytes(str(seqNumber))
-    #seq = intToBytes(seqNumber, 10)
-    seq = bytes(seqNumber)
-    # TODO make seqNumber fixed-length
-        
     #print "seqNum: ", str(seqNumber)
+    seq = bytes(str(seqNumber).zfill(10))
+    #seq = intToBytes(seqNumber, 10)
+    #seq = bytes(seqNumber)
     
     if isAck:
-        #print bytes(0) +" "+ seq
-        return bytes(0) +" " + seq
-        #return bytes(0) + bytes(seqNumber)
+        return bytes(0) + seq
     else:
-        #print bytes(1) + seq
-        return bytes(1) + " " + seq +" "+ bytearray(data)
-        #return bytes(1) + bytes(seqNumber) + bytearray(data)
+        return bytes(1) + seq + bytearray(data)
 
 def getValueFromPacket(packet):
-    # TODO make seqNumber fixed-length
-
     #seqNum = bytesToInt(packet[1:11])
-    packet = packet.split(" ")
-    seqNum = int(bytes(packet[1]))
+    seqNum = int(packet[1:11])
         
     if int(packet[0]) == 1:
         #isNotAck
-        # TODO make seqNumber fixed-length
-        #return (False, seqNum, packet[11:])
-        return (False, seqNum, packet[2:])
+        return (False, seqNum, packet[11:])
     else:
-        # TODO make seqNumber fixed-length
         return (True, seqNum, seqNum)
 
 # Following codes are for reference only, not used
