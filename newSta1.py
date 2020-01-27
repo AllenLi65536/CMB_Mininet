@@ -59,7 +59,8 @@ class FTPClient:
         while True:
             print "Input request filename:",
             fileName = sys.stdin.readline()
-            filName = fileName[:-1] # Remove \n
+            #filName = fileName[:-1] # Remove \n
+            fileName = fileName.strip("\n")
             self.fileLength = 0
             
             isTimeout = True
@@ -117,7 +118,6 @@ class FTPClient:
             print("Blocks sent through mobile network: " + str(self.lowBlocks))
 
             util.saveFileFromChunks(self.fileBlocks, fileName)
-            
             
             # Ack pending acks
             time.sleep(1.5) # temporary

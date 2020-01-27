@@ -27,9 +27,10 @@ def getFileChunks(fileName, chunkSize = 1000):
     
 def saveFileFromChunks(blocksOfFile, fileName):
     #print(getFileChunks(fileName)) # DEBUG
+    fileName = fileName.strip("\n")
     newname = fileName.split('.')[0] + '_copy.' + fileName.split('.')[1]
     file = open(newname, 'wb')
-    print("--------------------------------------------------------------")
+    print("-------------------File saved------------------------------")
     #print(blocksOfFile) # DEBUG
     
     for block in blocksOfFile:
@@ -66,29 +67,34 @@ def getPacket(isAck, seqNumber, data = None):
     #seq = bytearray(10-len(str(seqNumber)))
     #seq = seq + bytes(str(seqNumber))
     #seq = intToBytes(seqNumber, 10)
-    #seq = bytes(seqNumber)
-    # TODO make seqNumber longer
+    seq = bytes(seqNumber)
+    # TODO make seqNumber fixed-length
+        
+    #print "seqNum: ", str(seqNumber)
     
     if isAck:
-        return bytes(0) + bytes(seqNumber)
-        #return bytes(0) + seq
+        #print bytes(0) +" "+ seq
+        return bytes(0) +" " + seq
+        #return bytes(0) + bytes(seqNumber)
     else:
-        return bytes(1) + bytes(seqNumber) + bytearray(data)
-        #return bytes(1) + seq + bytearray(data)
+        #print bytes(1) + seq
+        return bytes(1) + " " + seq +" "+ bytearray(data)
+        #return bytes(1) + bytes(seqNumber) + bytearray(data)
 
 def getValueFromPacket(packet):
-    # TODO make seqNumber longer
+    # TODO make seqNumber fixed-length
 
     #seqNum = bytesToInt(packet[1:11])
-    seqNum = int(packet[1])
+    packet = packet.split(" ")
+    seqNum = int(bytes(packet[1]))
         
     if int(packet[0]) == 1:
         #isNotAck
-        # TODO make seqNumber longer
+        # TODO make seqNumber fixed-length
         #return (False, seqNum, packet[11:])
         return (False, seqNum, packet[2:])
     else:
-        # TODO make seqNumber longer
+        # TODO make seqNumber fixed-length
         return (True, seqNum, seqNum)
 
 # Following codes are for reference only, not used

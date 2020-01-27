@@ -77,7 +77,8 @@ class FTPServer:
                 #print "Timeout" # Temp
                 continue
             fileName = util.toString(fileName)
-            fileName = fileName[:-1] # Remove \n
+            #fileName = fileName[:-1] # Remove \n
+            fileName = fileName.strip("\n")
             print "requested file: ", fileName
 
             self.fileBlocks = util.getFileChunks(fileName)
