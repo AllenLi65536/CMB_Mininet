@@ -80,13 +80,13 @@ class FTPServer:
             fileName = fileName[:-1] # Remove \n
             print "requested file: ", fileName
 
-            self.fileBlocks = util.getFileChunks(fileName) # TODO Fix Problem
-            print("blocks")
-            print(self.fileBlocks)
+            self.fileBlocks = util.getFileChunks(fileName)
+            #print("blocks")
+            #print(self.fileBlocks)
             self.fileLength = len(self.fileBlocks)
             self.fileBlockReceived = [False] * self.fileLength
             
-            # TODO use packet instead of plain string
+            # Use plain string for simplicity here
             self.sockS.sendto("Ack " + str(self.fileLength), (self.remoteIP, self.recvPort))
             
             # Wait for RTT

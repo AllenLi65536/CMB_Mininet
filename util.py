@@ -4,27 +4,10 @@ import random #temporary
 
 CHUNK_SIZE = 1000
 
-def RecvACKprocess(sock):
-    while True:
-        data, addr = sock.recvfrom(1024)
-        if data == "Ack":
-            print("Ack received")
-            break
-def RecvACK(sock):
-    p = multiprocessing.Process(target=RecvACKprocess, args=(sock,))
-    p.start()
-    p.join(1)
-    # If process is still active, we kill it
-    if p.is_alive():
-      p.terminate()
-      p.join()    
-
 def getFileChunks(fileName, chunkSize = 1000):
-    # TODO openfile and return chunks of file
+    # Openfile and return chunks of file
     
-    #version 1
     result = []
-    #print('file name: ' + fileName[:-1])
     file = open(fileName, 'rb')
     
     data = file.read()
@@ -76,16 +59,15 @@ def bytesToInt(bytes):
     result = 0
 
     for b in bytes:
-        #print(b)
         result = result * 256 + int(b)
     return result
-
 
 def getPacket(isAck, seqNumber, data = None):
     #seq = bytearray(10-len(str(seqNumber)))
     #seq = seq + bytes(str(seqNumber))
     #seq = intToBytes(seqNumber, 10)
-    # TODO Problem: seqNumber should have more than one byte
+    #seq = bytes(seqNumber)
+    # TODO make seqNumber longer
     
     if isAck:
         return bytes(0) + bytes(seqNumber)
@@ -102,16 +84,31 @@ def getValueFromPacket(packet):
         
     if int(packet[0]) == 1:
         #isNotAck
-        # TODO seqNum should have more than one byte
+        # TODO make seqNumber longer
         #return (False, seqNum, packet[11:])
         return (False, seqNum, packet[2:])
     else:
-        # TODO seqNum should have more than one byte
+        # TODO make seqNumber longer
         return (True, seqNum, seqNum)
 
+# Following codes are for reference only, not used
 class Packet:
     def __init__(self, seq, ack, isSyn, isAck):
         self.seq = seq
         self.ack = ack
         self.isSyn = isSyn
         self.isAck = isAck
+def RecvACKprocess(sock):
+    while True:
+        data, addr = sock.recvfrom(1024)
+        if data == "Ack":
+            print("Ack received")
+            break
+def RecvACK(sock):
+    p = multiprocessing.Process(target=RecvACKprocess, args=(sock,))
+    p.start()
+    p.join(1)
+    # If process is still active, we kill it
+    if p.is_alive():
+      p.terminate()
+      p.join()    

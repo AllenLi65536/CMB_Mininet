@@ -73,9 +73,9 @@ class FTPClient:
                     isTimeout = True
                     continue
                 
-                # TODO use packet instead of plain string
+                # Use plain string for simplicity here
                 if data.startswith("Ack"):
-                    # TODO use packet instead of plain string
+                    # Use plain string for simplicity here
                     self.fileLength = int(data.split(" ")[1]) # Temporary
                     print("Ack received, fileLength: " + str(self.fileLength))
                     break
