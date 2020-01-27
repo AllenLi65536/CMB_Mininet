@@ -173,27 +173,6 @@ class FTPClient:
             self.fileBlockReceived[seqNum] = True
 
 
-            """
-            # TODO use packet instead of plain string
-            seqNum = int(data.split(" ")[0])  # Temporary
-
-            # Send ACK
-            if isHighSpeed:
-                # print "Received through Wifi ", str(seqNum)
-                # TODO use packet instead of plain string
-                sender.sendto("Ack " + str(seqNum), (self.remoteIPH, self.recvAckPort))
-                self.highBlocks += 1
-            else:
-                # TODO use packet instead of plain string
-                sender.sendto("Ack " + str(seqNum), (self.remoteIP, self.recvAckPort))
-                self.lowBlocks += 1
-            
-            self.fileBlocks[seqNum] = (" ").join(data.split(" ")[1:])  # Temporary
-            self.fileBlockReceived[seqNum] = True
-
-            """
-
-
     def sendHeartbeat(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # INTERNET, UDP
         sock.bind((self.localIP, 5010))
