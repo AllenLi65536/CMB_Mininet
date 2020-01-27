@@ -70,12 +70,13 @@ def intToBytes(value, length):
         result.append(value >> (i * 8) & 0xff)
     result.reverse()
 
-    return result
+    return bytearray(result)
 
 def bytesToInt(bytes):
     result = 0
 
     for b in bytes:
+        #print(b)
         result = result * 256 + int(b)
     return result
 
@@ -83,24 +84,27 @@ def bytesToInt(bytes):
 def getPacket(isAck, seqNumber, data = None):
     #seq = bytearray(10-len(str(seqNumber)))
     #seq = seq + bytes(str(seqNumber))
-    seq = intToBytes(seqNumber, 10)
+    #seq = intToBytes(seqNumber, 10)
     # TODO Problem: seqNumber should have more than one byte
+    
     if isAck:
-        #return bytes(0) + bytes(seqNumber)
-        return bytes(0) + seq
+        return bytes(0) + bytes(seqNumber)
+        #return bytes(0) + seq
     else:
-        #return bytes(1) + bytes(seqNumber) + bytearray(data)
-        return bytes(1) + seq + bytearray(data)
+        return bytes(1) + bytes(seqNumber) + bytearray(data)
+        #return bytes(1) + seq + bytearray(data)
 
 def getValueFromPacket(packet):
     # TODO make seqNumber longer
 
-    seqNum = bytesToInt(packet[1:11])
+    #seqNum = bytesToInt(packet[1:11])
+    seqNum = int(packet[1])
         
     if int(packet[0]) == 1:
         #isNotAck
         # TODO seqNum should have more than one byte
-        return (False, seqNum, packet[11:])
+        #return (False, seqNum, packet[11:])
+        return (False, seqNum, packet[2:])
     else:
         # TODO seqNum should have more than one byte
         return (True, seqNum, seqNum)
