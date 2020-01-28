@@ -26,7 +26,6 @@ def getFileChunks(fileName, chunkSize = 1000):
     return result
     
 def saveFileFromChunks(blocksOfFile, fileName):
-    #print(getFileChunks(fileName)) # DEBUG
     fileName = fileName.strip("\n")
     newname = fileName.split('.')[0] + '_copy.' + fileName.split('.')[1]
     file = open(newname, 'wb')
